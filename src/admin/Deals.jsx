@@ -4,7 +4,7 @@ import Icon from '../lib/icons.jsx';
 import { audit, customerName, me, staffName, useStore } from '../lib/store.jsx';
 import { can, visible } from '../lib/auth.js';
 import { cancelDeal, closeDeal, commissionCollected, createDeal, overrideRate, previewDeal, recordPayment, setCommission, setFeeOverride, voidPayment } from '../lib/actions.js';
-import { FEE_METHODS } from '../lib/catalog.js';
+import { FEE_METHODS, LEAD_SOURCES, OFFLINE_SOURCES, isSystemSource, sourceLabel } from '../lib/catalog.js';
 import { coverPhoto } from '../lib/art.js';
 import { COMMISSION_STATUS, DEAL_STATUS, PAYMENT_KINDS } from '../lib/catalog.js';
 import { downloadCsv, fmtDate, fmtDateTime, peso, pesoCents, sum } from '../lib/format.js';
@@ -26,9 +26,9 @@ export function Deals() {
     <Page title="Deals" sub="Reservations, sales and leases. Closing a deal locks the commission computation and bills the NuevaTech fee." actions={can(state, 'deals.create') && <button type="button" className="btn" onClick={() => setSp({ new: '1' })}><Icon name="plus" />New deal</button>}>
       <div className="card">
         <Tabs value={tab} onChange={setTab} tabs={[{ key: 'open', label: 'Open', count: rows.filter(f.open).length }, { key: 'closed', label: 'Closed', count: rows.filter(f.closed).length }, { key: 'cancelled', label: 'Cancelled', count: rows.filter(f.cancelled).length }]} />
-        {list.length ? <div className="table-wrap"><table className="t"><thead><tr><th>Deal</th><th>Buyer / tenant</th><th>Agent</th><th className="r">Price</th><th className="r">Commission</th><th>Status</th><th>{tab === 'closed' ? 'Closed' : 'Reserved'}</th></tr></thead><tbody>
+        {list.length ? <div className="table-wrap"><table className="t"><thead><tr><th>Deal</th><th>Buyer / tenant</th><th>Agent</th><th>Source</th><th className="r">Price</th><th className="r">Commission</th><th>Status</th><th>{tab === 'closed' ? 'Closed' : 'Reserved'}</th></tr></thead><tbody>
           {list.map((d) => { const l = state.listings.find((x) => x.id === d.listingId); const c = d.computation || previewDeal(state, d); return (
-            <tr key={d.id} className="click" onClick={() => nav(`/admin/deals/${d.id}`)}><td><b className="mono">{d.code}</b><div className="mini ellipsis" style={{ maxWidth: 260 }}>{l?.title}</div></td><td>{customerName(state, d.customerId)}</td><td>{staffName(state, d.agentId)}</td><td className="r num">{peso(d.price)}{d.type === 'rent' ? '/mo' : ''}</td><td className="r num">{peso(c.gross)}{!d.computation && <div className="mini">preview</div>}</td><td><Badge tone={DEAL_STATUS[d.status].tone}>{DEAL_STATUS[d.status].label}</Badge></td><td className="mini">{fmtDate(d.closedAt || d.reservedAt)}</td></tr>); })}
+            <tr key={d.id} className="click" onClick={() => nav(`/admin/deals/${d.id}`)}><td><b className="mono">{d.code}</b><div className="mini ellipsis" style={{ maxWidth: 260 }}>{l?.title}</div></td><td>{customerName(state, d.customerId)}</td><td>{staffName(state, d.agentId)}</td><td><span className={`badge ${isSystemSource(d.source) ? 'info' : 'muted'}`}>{sourceLabel(d.source)}</span></td><td className="r num">{peso(d.price)}{d.type === 'rent' ? '/mo' : ''}</td><td className="r num">{peso(c.gross)}{!d.computation && <div className="mini">preview</div>}</td><td><Badge tone={DEAL_STATUS[d.status].tone}>{DEAL_STATUS[d.status].label}</Badge></td><td className="mini">{fmtDate(d.closedAt || d.reservedAt)}</td></tr>); })}
         </tbody></table></div> : <Empty icon="handshake" title="No deals here" />}
       </div>
       {newFor && <NewDeal listingId={newFor === '1' ? '' : newFor} leadId={sp.get('lead')} onClose={() => setSp({})} onDone={(d) => { setSp({}); nav(`/admin/deals/${d.id}`); }} />}
@@ -47,14 +47,22 @@ function NewDeal({ listingId, leadId, onClose, onDone }) {
   const [scheme, setScheme] = useState('Cash');
   const [lease, setLease] = useState(state.settings.deals.terms.leaseMonths);
   const [days, setDays] = useState(3);
+  const [src, setSrc] = useState('');
+  const [err, setErr] = useState('');
   useEffect(() => { if (l) setPrice(l.price); }, [lid]); // eslint-disable-line react-hooks/exhaustive-deps
   const leads = state.inquiries.filter((q) => q.listingId === lid && !['won', 'lost'].includes(q.stage));
-  const preview = l ? previewDeal(state, { type: l.purpose, group: l.group, price: Number(price), unit: l.priceUnit, leaseMonths: lease, days, agentId: l.agentId, managerId: state.teams.find((t) => t.id === l.teamId)?.managerId }) : null;
+  const matched = (lead?.listingId === lid && lead) || leads.find((q) => q.customerId === cid);
+  const source = matched?.source || src;
+  const preview = l ? previewDeal(state, { type: l.purpose, group: l.group, category: l.category, source, price: Number(price), unit: l.priceUnit, leaseMonths: lease, days, agentId: l.agentId, managerId: state.teams.find((t) => t.id === l.teamId)?.managerId }) : null;
   return (
-    <Modal title="New deal (reservation)" onClose={onClose} width={640} footer={<><button type="button" className="btn ghost" onClick={onClose}>Cancel</button><button type="button" className="btn" disabled={!l || !cid} onClick={() => { const d = update((x) => createDeal(x, { listingId: lid, customerId: cid, inquiryId: lead?.id || leads.find((q) => q.customerId === cid)?.id, price, scheme, leaseMonths: lease, days })); toast(`Deal ${d.code} created. ${l.code} is now Reserved.`); onDone(d); }}>Create deal</button></>}>
+    <Modal title="New deal (reservation)" onClose={onClose} width={640} footer={<><button type="button" className="btn ghost" onClick={onClose}>Cancel</button><button type="button" className="btn" disabled={!l || !cid || !source} onClick={() => { const d = update((x) => createDeal(x, { listingId: lid, customerId: cid, inquiryId: matched?.id, source, price, scheme, leaseMonths: lease, days })); if (d.error) { setErr(d.error); return; } toast(`Deal ${d.code} created. ${l.code} is now Reserved.`); onDone(d); }}>Create deal</button></>}>
       <div className="stack">
         <Field label="Listing"><select value={lid} onChange={(e) => setLid(e.target.value)}>{avail.map((x) => <option key={x.id} value={x.id}>{x.code} · {x.title}</option>)}{l && !avail.includes(l) && <option value={l.id}>{l.code} · {l.title}</option>}</select></Field>
         <Field label="Buyer / tenant" hint={leads.length ? `${leads.length} customer(s) inquired about this listing` : 'Customers with an account'}><select value={cid} onChange={(e) => setCid(e.target.value)}><option value="">Choose…</option>{leads.map((q) => <option key={q.id} value={q.customerId}>★ {customerName(state, q.customerId)} (inquired)</option>)}{state.customers.filter((c) => !leads.some((q) => q.customerId === c.id)).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
+        {cid && (matched
+          ? <div className="note">Where the buyer came from: <b>{sourceLabel(matched.source)}</b> (taken from the inquiry; it can't be changed). {isSystemSource(matched.source) ? 'This sale came through the system.' : ''}</div>
+          : <Field label="Where did this buyer come from?" hint="No inquiry in the system for this buyer. Required: it shows on the deal, the NuevaTech fee line and in Analytics."><select value={src} onChange={(e) => setSrc(e.target.value)}><option value="">Choose…</option><optgroup label="Offline">{OFFLINE_SOURCES.map((k) => <option key={k} value={k}>{LEAD_SOURCES[k]}</option>)}</optgroup><optgroup label="Through the system">{Object.keys(LEAD_SOURCES).filter((k) => !OFFLINE_SOURCES.includes(k)).map((k) => <option key={k} value={k}>{LEAD_SOURCES[k]}</option>)}</optgroup></select></Field>)}
+        {err && <div className="note bad">{err}</div>}
         <div className="grid3">
           <Field label={l?.purpose === 'rent' ? `Agreed rent / ${l?.priceUnit === 'day' ? 'day' : 'month'}` : 'Agreed price'}><input type="number" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
           {l?.purpose === 'sale' ? <Field label="Payment scheme"><select value={scheme} onChange={(e) => setScheme(e.target.value)}>{['Cash', 'Bank financing', 'Pag-IBIG', 'In-house financing'].map((x) => <option key={x}>{x}</option>)}</select></Field>
@@ -110,7 +118,7 @@ export function DealDetail() {
           <div className="card card-pad"><h3>History</h3><Timeline entries={history} /></div>
         </div>
         <div className="stack">
-          <div className="card card-pad"><img src={coverPhoto(l)} alt="" style={{ borderRadius: 10, aspectRatio: '16/10', objectFit: 'cover', width: '100%' }} /><dl className="kv" style={{ marginTop: 12 }}><dt>Buyer / tenant</dt><dd>{customerName(state, d.customerId)}</dd><dt>Seller / owner</dt><dd>{d.sellerName}</dd><dt>Agent</dt><dd>{staffName(state, d.agentId)}</dd><dt>Manager</dt><dd>{d.managerId ? staffName(state, d.managerId) : '—'}</dd><dt>Price</dt><dd>{peso(d.price)}{d.type === 'rent' ? (d.unit === 'day' ? ' / day' : ' / month') : ''}</dd>{d.leaseMonths && <><dt>Lease</dt><dd>{d.leaseMonths} months</dd></>}</dl></div>
+          <div className="card card-pad"><img src={coverPhoto(l)} alt="" style={{ borderRadius: 10, aspectRatio: '16/10', objectFit: 'cover', width: '100%' }} /><dl className="kv" style={{ marginTop: 12 }}><dt>Buyer / tenant</dt><dd>{customerName(state, d.customerId)}</dd><dt>Seller / owner</dt><dd>{d.sellerName}</dd><dt>Source</dt><dd><span className={`badge ${isSystemSource(d.source) ? 'info' : 'muted'}`}>{sourceLabel(d.source)}</span>{d.inquiryId ? <div className="mini">from the inquiry</div> : <div className="mini">entered by staff</div>}</dd><dt>Agent</dt><dd>{staffName(state, d.agentId)}</dd><dt>Manager</dt><dd>{d.managerId ? staffName(state, d.managerId) : '—'}</dd><dt>Price</dt><dd>{peso(d.price)}{d.type === 'rent' ? (d.unit === 'day' ? ' / day' : ' / month') : ''}</dd>{d.leaseMonths && <><dt>Lease</dt><dd>{d.leaseMonths} months</dd></>}</dl></div>
           <div className="card card-pad"><h3>Documents</h3>{d.documents.map((x, i) => <label key={x.name} className="check" style={{ padding: '5px 0' }}><input type="checkbox" checked={x.done} disabled={!open} onChange={(e) => update((s) => { const y = s.deals.find((z) => z.id === d.id); y.documents[i].done = e.target.checked; audit(s, 'deal.document', `${d.code}: ${x.name} ${e.target.checked ? 'received' : 'unchecked'}`, { subject: { type: 'deal', id: d.id, label: d.code } }); })} /><span>{x.name}</span></label>)}<p className="mini">The customer sees this checklist in the portal and the app.</p></div>
           {open && can(state, 'deals.cancel') && <button type="button" className="btn danger ghost" onClick={() => setModal('cancel')}>Cancel deal</button>}
         </div>

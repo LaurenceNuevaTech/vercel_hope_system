@@ -4,7 +4,7 @@ import Icon from '../lib/icons.jsx';
 import { readPhoto, staffName, useStore } from '../lib/store.jsx';
 import { can } from '../lib/auth.js';
 import { confirmStatement, generateStatement, rejectStatementPayment, saveFeeRules, statementStatus, submitStatementPayment } from '../lib/actions.js';
-import { FEE_METHODS, STATEMENT_STATUS } from '../lib/catalog.js';
+import { FEE_METHODS, STATEMENT_STATUS, isSystemSource, sourceLabel } from '../lib/catalog.js';
 import { computeDeal } from '../lib/money.js';
 import { fmtDate, fmtDateTime, fmtMonth, peso, pesoCents, sum, ym } from '../lib/format.js';
 import { Badge, Empty, Field, Modal, PromptModal, Stat, Tabs } from '../components.jsx';
@@ -57,8 +57,8 @@ export default function Billing() {
                 {s.status === 'paid' && <button type="button" className="btn ghost xs" onClick={() => setPrint({ s, kind: 'or' })}><Icon name="receipt" />Receipt</button>}
               </td></tr>); })}
         </tbody></table></div> : <Empty icon="crown" title="No statements yet" />)}
-        {tab === 'fees' && <div className="table-wrap"><table className="t"><thead><tr><th>Deal</th><th>Closed</th><th>Property / vehicle</th><th>Basis</th><th className="r">Fee</th><th>Status</th></tr></thead><tbody>
-          {[...state.fees].sort((a, b) => b.closedAt.localeCompare(a.closedAt)).map((f) => { const d = state.deals.find((x) => x.id === f.dealId); const l = state.listings.find((x) => x.id === d?.listingId); return <tr key={f.id}><td><Link to={`/admin/deals/${d?.id}`} className="mono">{d?.code}</Link></td><td className="mini">{fmtDate(f.closedAt)}</td><td className="ellipsis" style={{ maxWidth: 260 }}>{l?.title}</td><td className="mini">{f.basis}</td><td className="r num">{pesoCents(f.amount)}</td><td><Badge tone={f.status === 'paid' ? 'ok' : f.status === 'billed' ? 'warn' : 'info'}>{f.status}</Badge></td></tr>; })}
+        {tab === 'fees' && <div className="table-wrap"><table className="t"><thead><tr><th>Deal</th><th>Closed</th><th>Property / vehicle</th><th>Source</th><th>Basis</th><th className="r">Fee</th><th>Status</th></tr></thead><tbody>
+          {[...state.fees].sort((a, b) => b.closedAt.localeCompare(a.closedAt)).map((f) => { const d = state.deals.find((x) => x.id === f.dealId); const l = state.listings.find((x) => x.id === d?.listingId); return <tr key={f.id}><td><Link to={`/admin/deals/${d?.id}`} className="mono">{d?.code}</Link></td><td className="mini">{fmtDate(f.closedAt)}</td><td className="ellipsis" style={{ maxWidth: 260 }}>{l?.title}</td><td><span className={`badge ${isSystemSource(f.source || d?.source) ? 'info' : 'muted'}`}>{sourceLabel(f.source || d?.source)}</span></td><td className="mini">{f.basis}</td><td className="r num">{pesoCents(f.amount)}</td><td><Badge tone={f.status === 'paid' ? 'ok' : f.status === 'billed' ? 'warn' : 'info'}>{f.status}</Badge></td></tr>; })}
         </tbody></table></div>}
         {tab === 'how' && (
           <div className="card-b how">

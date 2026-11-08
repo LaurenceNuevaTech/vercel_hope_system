@@ -5,7 +5,7 @@ import { scope, visible } from '../lib/auth.js';
 import { figures } from '../lib/analytics.js';
 import { LISTING_STATUS } from '../lib/catalog.js';
 import { downloadCsv, peso, pesoShort, sum } from '../lib/format.js';
-import { Stat } from '../components.jsx';
+import { Badge, Stat } from '../components.jsx';
 import { BarList, Columns, Funnel, LineChart, SERIES } from './charts.jsx';
 import { Page } from './AdminApp.jsx';
 
@@ -40,11 +40,12 @@ export default function Analytics() {
   const topShared = [...listings].map((l) => [l.title, sum(Object.values(l.shares))]).sort((a, b) => b[1] - a[1]).slice(0, 6);
   const shareCh = ['facebook', 'messenger', 'link', 'viber', 'qr'].map((k) => [k[0].toUpperCase() + k.slice(1), sum(listings, (l) => l.shares[k] || 0)]);
 
+  const exportSources = () => downloadCsv('hope-sales-by-source.csv', ['Source', 'Through the system', 'Closed deals', 'Sales volume', 'NuevaTech fee'], f.salesBySource.map((x) => [x.label, x.system ? 'Yes' : 'No', x.deals, x.volume, x.fee]));
   const exportCsv = () => downloadCsv('hope-analytics-by-month.csv', ['Month', 'Closed deals', 'Sales', 'Rentals', 'Sales volume', 'Hope commission', 'NuevaTech fee', 'Hope net'], f.byMonth.map((m) => [m.key, m.count, m.sales, m.rentals, m.volume, m.commission, m.fee, m.hopeNet]));
   const exportAgents = () => downloadCsv('hope-agents.csv', ['Agent', 'Active listings', 'Leads', 'Closed deals', 'Volume', 'Commission (Hope)', 'Agent share'], f.agents.map((a) => [a.name, a.listings, a.leads, a.deals, a.volume, a.commission, a.earned]));
 
   return (
-    <Page title="Analytics" sub={`${sc === 'all' ? 'Whole company' : state.teams.find((x) => x.id === s.teamId)?.name || 'Own'} · last 12 months`} actions={<><button type="button" className="btn ghost" onClick={exportCsv}><Icon name="download" />Excel / CSV</button><button type="button" className="btn ghost" onClick={() => window.print()}><Icon name="print" />Print</button></>}>
+    <Page title="Analytics" sub={`${sc === 'all' ? 'Whole company' : state.teams.find((x) => x.id === s.teamId)?.name || 'Own'} · last 12 months`} actions={<><button type="button" className="btn ghost" onClick={exportSources}><Icon name="download" />Sales by source</button><button type="button" className="btn ghost" onClick={exportCsv}><Icon name="download" />Excel / CSV</button><button type="button" className="btn ghost" onClick={() => window.print()}><Icon name="print" />Print</button></>}>
       <div className="card filters-a">
         {sc === 'all' && <select className="input" value={team} onChange={(e) => setTeam(e.target.value)}><option value="">All teams</option>{state.teams.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select>}
         <select className="input" value={agent} onChange={(e) => setAgent(e.target.value)}><option value="">All agents</option>{agents.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select>
@@ -55,6 +56,7 @@ export default function Analytics() {
         <Stat icon="trend" label="Sales volume" value={pesoShort(f.totals.volume)} sub={`${f.totals.deals} closed deals`} />
         <Stat icon="percent" tone="ok" label="Hope commission" value={peso(f.totals.commission)} sub={`Net ${peso(f.totals.hopeNet)}`} />
         <Stat icon="crown" tone="accent" label="NuevaTech fees" value={peso(f.totals.fee)} />
+        <Stat icon="globe" tone="info" label="Sales through the system" value={`${f.system.share}%`} sub={`${f.system.deals} of ${f.totals.deals} deals · website, app, share links`} />
         <Stat icon="handshake" tone="info" label="Lead conversion" value={`${f.conversion}%`} sub={`${f.won} won · ${f.lost} lost`} />
         <Stat icon="clock" tone="warn" label="Avg. first reply" value={`${f.avgReplyH.toFixed(1)} h`} sub={`Avg. ${f.avgDaysToClose} days listing → close`} />
       </div>
@@ -63,6 +65,11 @@ export default function Analytics() {
         <div className="card"><div className="card-h"><h3>Lead funnel</h3></div><div className="card-b"><Funnel data={f.funnel} /></div></div>
         <div className="card span2"><div className="card-h"><h3>Where the commission goes</h3><div className="legend"><span><i style={{ background: SERIES[0] }} />Commission</span><span><i style={{ background: SERIES[2] }} />Hope net</span><span><i style={{ background: SERIES[1] }} />NuevaTech fee</span></div></div>
           <div className="card-b"><LineChart labels={months} series={[{ name: 'Commission', color: SERIES[0], values: f.byMonth.map((m) => Math.round(m.commission)) }, { name: 'Hope net', color: SERIES[2], values: f.byMonth.map((m) => Math.round(m.hopeNet)) }, { name: 'NuevaTech fee', color: SERIES[1], values: f.byMonth.map((m) => Math.round(m.fee)) }]} format={pesoShort} height={240} /></div></div>
+        <div className="card span2"><div className="card-h"><h3>Sales by source (closed deals)</h3><span className="mini">{f.system.share}% came through the system</span></div>
+          <div className="card-b"><div className="table-wrap"><table className="t"><thead><tr><th>Source</th><th>Through the system?</th><th className="r">Deals</th><th className="r">Sales volume</th><th className="r">NuevaTech fee</th></tr></thead><tbody>
+            {f.salesBySource.map((x) => <tr key={x.key}><td><b>{x.label}</b></td><td>{x.system ? <Badge tone="info">Yes</Badge> : <Badge tone="muted">Offline</Badge>}</td><td className="r num">{x.deals}</td><td className="r num">{pesoShort(x.volume)}</td><td className="r num">{peso(x.fee)}</td></tr>)}
+            <tr><td><b>Total through the system</b></td><td /><td className="r num"><b>{f.system.deals}</b></td><td className="r num"><b>{pesoShort(f.system.volume)}</b></td><td className="r num"><b>{peso(f.system.fee)}</b></td></tr>
+          </tbody></table></div><p className="mini" style={{ margin: '8px 0 0' }}>Each deal keeps the source of the buyer's inquiry (website, app, share link or QR code). Deals without an inquiry get a source chosen by staff (walk-in, referral, phone call).</p></div></div>
         <div className="card"><div className="card-h"><h3>Lead sources</h3><span className="mini">incl. share links</span></div><div className="card-b"><BarList data={f.sources} labelWidth={120} /></div></div>
         <div className="card"><div className="card-h"><h3>Closed deals by category</h3></div><div className="card-b"><BarList data={f.cats} labelWidth={110} color={SERIES[2]} /></div></div>
         <div className="card"><div className="card-h"><h3>Inquiries by location</h3></div><div className="card-b"><BarList data={f.cities} labelWidth={140} color={SERIES[3]} /></div></div>

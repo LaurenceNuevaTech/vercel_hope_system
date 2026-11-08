@@ -43,7 +43,7 @@ export default function Dashboard() {
             <Stat icon="crown" tone="accent" label="Platform fees (12 months)" value={peso(f.totals.fee)} to="/admin/billing" />
             <Stat icon="clock" tone="warn" label="Unbilled (this month)" value={peso(unbilled)} sub="Statement on the 1st" to="/admin/billing" />
             <Stat icon="receipt" tone={balance ? 'bad' : 'ok'} label="Hope's unpaid balance" value={peso(balance)} sub={`${unpaidStatements.length} statement(s)`} to="/admin/billing" />
-            <Stat icon="users" tone="info" label="Accounts" value={`${state.staff.length} staff · ${state.customers.length} customers`} />
+            <Stat icon="globe" tone="info" label="Sales through the system" value={`${f.system.share}%`} sub={`${f.system.deals} of ${f.totals.deals} closed deals (12 months) · fees ${peso(f.system.fee)}`} to="/admin/analytics" />
           </div>
           <div className="card" style={{ marginTop: 14 }}>
             <div className="card-h"><h3>Platform fee per month</h3><span className="mini">{state.settings.platform.fee.method === 'commission' ? `${state.settings.platform.fee.ratePct}% of Hope's commission` : state.settings.platform.fee.method === 'price' ? `${state.settings.platform.fee.ratePct}% of the deal price` : 'Fixed per deal'}</span></div>

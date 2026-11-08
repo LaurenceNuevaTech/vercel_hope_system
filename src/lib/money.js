@@ -27,6 +27,7 @@ export function dealValue(deal) {
 export function feeFor(deal, settings) {
   const f = settings.platform.fee;
   if (f.enabled === false) return { method: 'none', rate: 0, fixed: 0, source: 'NuevaTech fee switched off' };
+  if (f.scope === 'system' && deal.source && !['web', 'mobile', 'facebook', 'messenger', 'viber', 'qr'].includes(deal.source)) return { method: 'none', rate: 0, fixed: 0, source: 'offline deal, not charged' };
   if (deal.feeOverride) return { ...deal.feeOverride, source: 'set for this deal' };
   const rule = (settings.platform.rules || []).find((r) => r.active && (!r.categories?.length || r.categories.includes(deal.category)) && (r.purpose === 'any' || r.purpose === deal.type));
   if (rule) return { method: rule.method, rate: Number(rule.rate), fixed: Number(rule.fixed), source: `rule "${rule.label}"` };
@@ -67,11 +68,11 @@ export function computeDeal(deal, settings, { agent, hasManager } = {}) {
 
   const fee = feeFor(deal, settings);
   let platformFee; let platformBasis;
-  if (fee.method === 'none') { platformFee = 0; platformBasis = 'no fee (switched off)'; }
+  if (fee.method === 'none') { platformFee = 0; platformBasis = `no fee (${fee.source})`; }
   else if (fee.method === 'price') { platformFee = (value * fee.rate) / 100; platformBasis = `${fee.rate}% of the deal price`; }
   else if (fee.method === 'fixed') { platformFee = fee.fixed; platformBasis = 'fixed fee'; }
   else { platformFee = (gross * fee.rate) / 100; platformBasis = `${fee.rate}% of Hope's commission`; }
-  platformBasis += fee.source === 'default' ? '' : ` · ${fee.source}`;
+  platformBasis += fee.source === 'default' || fee.method === 'none' ? '' : ` · ${fee.source}`;
   platformFee = round2(platformFee);
 
   const wht = c.payout.withholdingOn ? Number(c.payout.withholdingPct) : 0;

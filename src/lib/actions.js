@@ -1,7 +1,7 @@
 // Business actions. Each one runs inside update(draft => ...) and writes the
 // audit trail, so the website, the staff portal and the phone simulator behave
 // the same (and match the API described in docs/).
-import { LISTING_STATUS, PAYMENT_KINDS } from './catalog.js';
+import { LEAD_SOURCES, LISTING_STATUS, PAYMENT_KINDS } from './catalog.js';
 import { addDays, pad, slugify, ym } from './format.js';
 import { computeDeal } from './money.js';
 import { audit, nextNo, notify } from './store.jsx';
@@ -222,10 +222,14 @@ export function setViewing(draft, id, patch) {
 export function createDeal(draft, data) {
   const a = actorOf(draft);
   const l = draft.listings.find((x) => x.id === data.listingId);
+  const lead = data.inquiryId && draft.inquiries.find((x) => x.id === data.inquiryId);
+  // Where the buyer came from: the inquiry's source (website, app, share link) or, without one, what the agent picked.
+  const source = lead?.source || data.source;
+  if (!source) return { error: 'Choose where this buyer came from.' };
   draft.counters.deal += 1;
   const d = {
     id: `d${Date.now().toString(36)}`, code: `DL-${new Date().getFullYear()}-${pad(draft.counters.deal)}`, listingId: l.id, inquiryId: data.inquiryId || null, customerId: data.customerId,
-    agentId: l.agentId, managerId: teamManager(draft, l.agentId), teamId: l.teamId, category: l.category, feeOverride: null, type: l.purpose, group: l.group, price: Number(data.price) || l.price, unit: l.priceUnit,
+    agentId: l.agentId, managerId: teamManager(draft, l.agentId), teamId: l.teamId, category: l.category, feeOverride: null, source, type: l.purpose, group: l.group, price: Number(data.price) || l.price, unit: l.priceUnit,
     leaseMonths: l.purpose === 'rent' && l.priceUnit !== 'day' ? Number(data.leaseMonths) || draft.settings.deals.terms.leaseMonths : null, days: l.priceUnit === 'day' ? Number(data.days) || 1 : null,
     scheme: data.scheme || (l.purpose === 'rent' ? 'Lease' : 'Cash'), status: 'reserved', reservedAt: new Date().toISOString(), closedAt: null, closedBy: null, cancelledAt: null, cancelReason: null, rateOverride: null,
     sellerName: l.ownerName, notes: data.notes || '', createdBy: a?.id || null, createdAt: new Date().toISOString(), computation: null,
@@ -235,7 +239,7 @@ export function createDeal(draft, data) {
   const fromStatus = l.status;
   l.status = 'reserved';
   if (d.inquiryId) { const q = draft.inquiries.find((x) => x.id === d.inquiryId); if (q) q.stage = 'reserved'; }
-  audit(draft, 'deal.created', `Created deal ${d.code} for ${l.code}`, { subject: dsubj(d, draft) });
+  audit(draft, 'deal.created', `Created deal ${d.code} for ${l.code} · source: ${LEAD_SOURCES[source] || source}${lead ? ' (from the inquiry)' : ' (entered by staff)'}`, { subject: dsubj(d, draft) });
   audit(draft, 'listing.reserved', `${l.code} marked Reserved`, { subject: subj(l), changes: [{ field: 'status', label: 'Status', from: LISTING_STATUS[fromStatus]?.label, to: 'Reserved' }] });
   return d;
 }
@@ -274,7 +278,7 @@ export function closeDeal(draft, id) {
 
 function addFee(draft, d) {
   if (draft.fees.some((f) => f.dealId === d.id) || !(d.computation.platformFee > 0)) return;
-  draft.fees.unshift({ id: `f${Date.now().toString(36)}`, dealId: d.id, amount: d.computation.platformFee, basis: d.computation.platformBasis, month: ym(new Date()), closedAt: d.closedAt, status: 'unbilled', statementId: null });
+  draft.fees.unshift({ id: `f${Date.now().toString(36)}`, dealId: d.id, source: d.source, amount: d.computation.platformFee, basis: d.computation.platformBasis, month: ym(new Date()), closedAt: d.closedAt, status: 'unbilled', statementId: null });
   audit(draft, 'billing.fee_added', `Platform fee ${fmt(d.computation.platformFee)} for ${d.code} (${d.computation.platformBasis})`, { subject: dsubj(d, draft) });
 }
 

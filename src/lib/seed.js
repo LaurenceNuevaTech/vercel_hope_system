@@ -6,7 +6,7 @@ import { DEFAULT_CATEGORIES, DEFAULT_CMS, DEFAULT_ROLES, INTEGRATIONS, defaultSe
 import { addDays, pad, rng, slugify, ym } from './format.js';
 import { computeDeal } from './money.js';
 
-export const DATA_VERSION = 6;
+export const DATA_VERSION = 7;
 
 const iso = (d) => new Date(d).toISOString();
 
@@ -318,7 +318,7 @@ export function defaultState() {
       counters.deal += 1;
       const reservedAt = addDays(closedAt, -r.int(7, 20));
       const deal = {
-        id: `d${counters.deal}`, code: `DL-${reservedAt.getFullYear()}-${pad(counters.deal)}`, listingId: l.id, inquiryId: q.id, customerId: cust.id, agentId, managerId: managerOf(agentId), teamId: teamOf(agentId), category, feeOverride: null,
+        id: `d${counters.deal}`, code: `DL-${reservedAt.getFullYear()}-${pad(counters.deal)}`, listingId: l.id, inquiryId: q.id, customerId: cust.id, agentId, managerId: managerOf(agentId), teamId: teamOf(agentId), category, feeOverride: null, source: src,
         type: purpose, group: g, price, unit: l.priceUnit, leaseMonths: purpose === 'rent' ? 12 : null, days: null, scheme: purpose === 'rent' ? 'Lease' : r.pick(['Cash', 'Bank financing', 'Pag-IBIG', 'Cash']),
         status: 'closed', reservedAt: iso(reservedAt), closedAt: iso(closedAt), closedBy: managerOf(agentId), cancelledAt: null, cancelReason: null, rateOverride: null,
         sellerName: l.ownerName, notes: '', createdBy: agentId, createdAt: iso(reservedAt),
@@ -327,7 +327,7 @@ export function defaultState() {
       deal.computation = computeDeal(deal, settings, { agent: staffById[agentId], hasManager: !!deal.managerId });
       deals.push(deal);
       const dsubj = { type: 'deal', id: deal.id, label: `${deal.code} · ${l.title}` };
-      log(reservedAt, actor(agentId), 'deal.created', `Created deal ${deal.code} for ${l.code} (${cust.name})`, { subject: dsubj });
+      log(reservedAt, actor(agentId), 'deal.created', `Created deal ${deal.code} for ${l.code} (${cust.name}) · source: ${src}`, { subject: dsubj });
       if (purpose === 'sale') {
         addPayment(deal, 'reservation', g === 'vehicle' ? 10000 : 20000, reservedAt, r.pick(['GCash', 'Bank transfer', 'Online (PayMongo)']), agentId, cust.name, r.chance(0.3));
       } else {
@@ -350,7 +350,7 @@ export function defaultState() {
         if (cm.paidAt) log(new Date(cm.paidAt), actor('u_fin'), 'commission.paid', `Paid commission ${cm.no} to ${staffById[sid].name}: ₱${net.toLocaleString()}`, { subject: dsubj });
       }
       // platform fee
-      if (deal.computation.platformFee > 0) fees.push({ id: `f${deals.length}`, dealId: deal.id, amount: deal.computation.platformFee, basis: deal.computation.platformBasis, month: ym(closedAt), closedAt: iso(closedAt), status: 'unbilled', statementId: null });
+      if (deal.computation.platformFee > 0) fees.push({ id: `f${deals.length}`, dealId: deal.id, source: deal.source, amount: deal.computation.platformFee, basis: deal.computation.platformBasis, month: ym(closedAt), closedAt: iso(closedAt), status: 'unbilled', statementId: null });
       q.stage = 'won';
     }
   }
@@ -390,7 +390,7 @@ export function defaultState() {
     counters.deal += 1;
     const reservedAt = addDays(now, -r.int(3, 8));
     const deal = {
-      id: `d${counters.deal}`, code: `DL-${reservedAt.getFullYear()}-${pad(counters.deal)}`, listingId: l.id, inquiryId: q.id, customerId: cust.id, agentId: l.agentId, managerId: managerOf(l.agentId), teamId: l.teamId, category: l.category, feeOverride: null,
+      id: `d${counters.deal}`, code: `DL-${reservedAt.getFullYear()}-${pad(counters.deal)}`, listingId: l.id, inquiryId: q.id, customerId: cust.id, agentId: l.agentId, managerId: managerOf(l.agentId), teamId: l.teamId, category: l.category, feeOverride: null, source: q.source,
       type: l.purpose, group: l.group, price: l.purpose === 'sale' ? Math.round(l.price * 0.97 / 10000) * 10000 : l.price, unit: l.priceUnit, leaseMonths: l.purpose === 'rent' ? 12 : null, days: null,
       scheme: l.purpose === 'rent' ? 'Lease' : i === 0 ? 'Pag-IBIG' : 'Bank financing', status: i % 2 ? 'processing' : 'reserved', reservedAt: iso(reservedAt), closedAt: null, closedBy: null, cancelledAt: null, cancelReason: null, rateOverride: null,
       sellerName: l.ownerName, notes: '', createdBy: l.agentId, createdAt: iso(reservedAt), computation: null,
@@ -410,7 +410,7 @@ export function defaultState() {
     const q = mkInquiry(l, cust, addDays(now, -40), 'lost', 'web');
     q.lostReason = 'Financing not approved';
     counters.deal += 1;
-    deals.push({ id: `d${counters.deal}`, code: `DL-${now.getFullYear()}-${pad(counters.deal)}`, listingId: l.id, inquiryId: q.id, customerId: cust.id, agentId: l.agentId, managerId: managerOf(l.agentId), teamId: l.teamId, category: l.category, feeOverride: null, type: 'sale', group: 'property', price: l.price, unit: 'total', leaseMonths: null, days: null, scheme: 'Bank financing', status: 'cancelled', reservedAt: iso(addDays(now, -35)), closedAt: null, closedBy: null, cancelledAt: iso(addDays(now, -15)), cancelReason: 'Bank loan was not approved. Reservation fee forfeited per agreement.', rateOverride: null, sellerName: l.ownerName, notes: '', createdBy: l.agentId, createdAt: iso(addDays(now, -35)), computation: null, documents: [] });
+    deals.push({ id: `d${counters.deal}`, code: `DL-${now.getFullYear()}-${pad(counters.deal)}`, listingId: l.id, inquiryId: q.id, customerId: cust.id, agentId: l.agentId, managerId: managerOf(l.agentId), teamId: l.teamId, category: l.category, feeOverride: null, source: q.source, type: 'sale', group: 'property', price: l.price, unit: 'total', leaseMonths: null, days: null, scheme: 'Bank financing', status: 'cancelled', reservedAt: iso(addDays(now, -35)), closedAt: null, closedBy: null, cancelledAt: iso(addDays(now, -15)), cancelReason: 'Bank loan was not approved. Reservation fee forfeited per agreement.', rateOverride: null, sellerName: l.ownerName, notes: '', createdBy: l.agentId, createdAt: iso(addDays(now, -35)), computation: null, documents: [] });
     log(addDays(now, -15), actor(managerOf(l.agentId)), 'deal.cancelled', `Cancelled ${deals[deals.length - 1].code}: bank loan not approved`, { subject: { type: 'deal', id: `d${counters.deal}`, label: deals[deals.length - 1].code }, severity: 'warning' });
   }
 

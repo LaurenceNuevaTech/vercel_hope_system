@@ -53,7 +53,12 @@ export const LEAD_STAGES = [
   { key: 'lost', label: 'Closed – lost', tone: 'bad' },
 ];
 
-export const LEAD_SOURCES = { web: 'Website', mobile: 'Mobile app', facebook: 'Facebook share', messenger: 'Messenger share', viber: 'Viber share', qr: 'QR / flyer', referral: 'Referral', walk_in: 'Walk-in' };
+export const LEAD_SOURCES = { web: 'Website', mobile: 'Mobile app', facebook: 'Facebook share', messenger: 'Messenger share', viber: 'Viber share', qr: 'QR / flyer', referral: 'Referral', walk_in: 'Walk-in', phone: 'Phone call', other: 'Other (offline)' };
+// Sources that came through the system: the website, the app, or a tracked share link / QR code.
+export const SYSTEM_SOURCES = ['web', 'mobile', 'facebook', 'messenger', 'viber', 'qr'];
+export const OFFLINE_SOURCES = ['walk_in', 'referral', 'phone', 'other'];
+export const isSystemSource = (s) => SYSTEM_SOURCES.includes(s);
+export const sourceLabel = (s) => LEAD_SOURCES[s] || 'Not recorded';
 
 export const DEAL_STATUS = {
   reserved: { label: 'Reserved', tone: 'info' },
@@ -266,6 +271,7 @@ export const SETTINGS = [
         { key: 'fixedSale', label: 'Fixed fee – sale', type: 'money', default: 5000 },
         { key: 'fixedRent', label: 'Fixed fee – rent', type: 'money', default: 1000 },
         { key: 'trigger', label: 'Fee becomes billable when', type: 'select', default: 'closed', choices: { closed: 'The deal is closed', collected: 'Hope has collected its commission' } },
+        { key: 'scope', label: 'Charge the fee on', type: 'select', default: 'all', choices: { all: 'Every closed deal recorded in the system', system: 'Only deals that came through the system (website, app, share links, QR)' }, description: 'Each deal records where the buyer came from. With the second option, walk-in, referral and phone-call deals pay no NuevaTech fee.' },
       ] },
       { key: 'billing', label: 'Statement of account', fields: [
         { key: 'cycle', label: 'Billing cycle', type: 'select', default: 'monthly', choices: { monthly: 'Monthly', per_deal: 'Per deal' } },

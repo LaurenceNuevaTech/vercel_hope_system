@@ -150,7 +150,7 @@ export const API = [
   {
     group: 'Staff: dashboard & analytics', portal: 'admin', items: [
       { id: 's.dash', method: 'GET', path: '/admin/dashboard', auth: 'staff', perm: 'dashboard.view', mobile: true, summary: 'Cards for the role: agent (my leads, viewings today, commissions), manager (team, approvals), owner (company KPIs, NuevaTech balance), super admin (platform).' },
-      { id: 's.analytics', method: 'GET', path: '/admin/analytics', auth: 'staff', perm: 'analytics.view | analytics.team', summary: 'Sales volume, commission, funnel, sources, agents, categories, cities, traffic. Query: from, to, team, agent, category, purpose. /admin/analytics/export → Excel / CSV.' },
+      { id: 's.analytics', method: 'GET', path: '/admin/analytics', auth: 'staff', perm: 'analytics.view | analytics.team', summary: 'Sales volume, commission, funnel, lead sources and sales by source (share of deals through the system), agents, categories, cities, traffic. Query: from, to, team, agent, category, purpose. /admin/analytics/export → Excel / CSV.' },
     ],
   },
   {
@@ -188,7 +188,7 @@ export const API = [
   {
     group: 'Staff: deals, payments & receipts', portal: 'admin', items: [
       { id: 's.deals', method: 'GET', path: '/admin/deals', auth: 'staff', mobile: true, summary: 'Deals in scope.' },
-      { id: 's.deal.create', method: 'POST', path: '/admin/deals', auth: 'staff', perm: 'deals.create', mobile: true, summary: 'Reserve: { listing_id, customer_id, inquiry_id, price, scheme, lease_months }. Listing → Reserved.' },
+      { id: 's.deal.create', method: 'POST', path: '/admin/deals', auth: 'staff', perm: 'deals.create', mobile: true, summary: 'Reserve: { listing_id, customer_id, inquiry_id, source, price, scheme, lease_months }. source is taken from the inquiry (website, app, share link, QR); without an inquiry it is required (walk_in, referral, phone, other). Listing → Reserved.' },
       { id: 's.deal.preview', method: 'GET', path: '/admin/deals/{id}/computation', auth: 'staff', mobile: true, summary: 'Live computation with the current settings (commission, agent / manager split, NuevaTech fee, Hope net).',
         response: ok({ value: 9000000, gross: 450000, basis: '5% of the selling price', agent_pct: 65, agent_share: 292500, manager_pct: 5, manager_share: 22500, hope_share: 135000, platform_fee: 22500, platform_basis: '5% of Hope\'s commission', platform_source: 'default', hope_net: 112500 }) },
       { id: 's.deal.close', method: 'POST', path: '/admin/deals/{id}/close', auth: 'staff', perm: 'deals.close', summary: 'Close: locks the computation, listing → Sold / Rented, creates commission vouchers and the NuevaTech platform fee.' },

@@ -2,7 +2,7 @@
 // acknowledgement receipt, commission voucher, deal computation sheet,
 // NuevaTech statement of account and NuevaTech official receipt.
 import { useStore, staffName, customerName } from './lib/store.jsx';
-import { PAYMENT_KINDS } from './lib/catalog.js';
+import { PAYMENT_KINDS, sourceLabel } from './lib/catalog.js';
 import { amountInWords, fmtDate, fmtDateTime, fmtMonth, pesoCents } from './lib/format.js';
 import { LogoMark, PrintModal } from './components.jsx';
 
@@ -138,11 +138,11 @@ export function StatementPrint({ statement, onClose }) {
           <div style={{ textAlign: 'right' }}><div className="mini">Period</div><b>{fmtMonth(statement.period)}</b><div className="mini">Due {fmtDate(statement.dueAt)}</div></div>
         </div>
         <table>
-          <thead><tr><th>Deal</th><th>Closed</th><th>Property / vehicle</th><th>Basis</th><th className="r">Fee</th></tr></thead>
+          <thead><tr><th>Deal</th><th>Closed</th><th>Property / vehicle</th><th>Source</th><th>Basis</th><th className="r">Fee</th></tr></thead>
           <tbody>
-            {fees.map((f) => { const d = state.deals.find((x) => x.id === f.dealId); const l = state.listings.find((x) => x.id === d?.listingId); return <tr key={f.id}><td className="mono">{d?.code}</td><td>{fmtDate(f.closedAt)}</td><td>{l?.title}</td><td>{f.basis}</td><td className="r">{pesoCents(f.amount)}</td></tr>; })}
-            <tr><td colSpan={4} className="r"><b>Total due</b></td><td className="r"><b>{pesoCents(statement.total)}</b></td></tr>
-            {paid > 0 && <tr><td colSpan={4} className="r">Payments received</td><td className="r">{pesoCents(paid)}</td></tr>}
+            {fees.map((f) => { const d = state.deals.find((x) => x.id === f.dealId); const l = state.listings.find((x) => x.id === d?.listingId); return <tr key={f.id}><td className="mono">{d?.code}</td><td>{fmtDate(f.closedAt)}</td><td>{l?.title}</td><td>{sourceLabel(f.source || d?.source)}</td><td>{f.basis}</td><td className="r">{pesoCents(f.amount)}</td></tr>; })}
+            <tr><td colSpan={5} className="r"><b>Total due</b></td><td className="r"><b>{pesoCents(statement.total)}</b></td></tr>
+            {paid > 0 && <tr><td colSpan={5} className="r">Payments received</td><td className="r">{pesoCents(paid)}</td></tr>}
           </tbody>
         </table>
         <p className="mini" style={{ whiteSpace: 'pre-line' }}>Pay to: {pf.billing.payee}{'\n'}{pf.billing.bank}</p>

@@ -1,5 +1,5 @@
 // Numbers for the dashboards and the Analytics page, computed from the records.
-import { LEAD_SOURCES, LEAD_STAGES } from './catalog.js';
+import { LEAD_SOURCES, LEAD_STAGES, isSystemSource } from './catalog.js';
 import { monthName, sum, ym } from './format.js';
 
 export function lastMonths(n = 12) {
@@ -34,7 +34,12 @@ export function figures(state, { deals, leads, listings }) {
     const ds = closed.filter((d) => d.agentId === s.id);
     return { id: s.id, name: s.name, deals: ds.length, volume: sum(ds, (d) => d.price * (d.type === 'rent' ? 12 : 1)), commission: sum(ds, (d) => d.computation?.gross), earned: sum(ds, (d) => d.computation?.agentShare), leads: leads.filter((q) => q.agentId === s.id).length, listings: listings.filter((l) => l.agentId === s.id && l.status === 'published').length };
   }).filter((a) => a.deals || a.leads || a.listings).sort((a, b) => b.commission - a.commission);
+  const dealValue = (d) => (d.type === 'sale' ? d.price : d.computation?.value || 0);
+  const salesBySource = Object.entries(LEAD_SOURCES).map(([k, label]) => { const ds = closed.filter((d) => d.source === k); return { key: k, label, system: isSystemSource(k), deals: ds.length, volume: sum(ds, dealValue), fee: sum(ds, (d) => d.computation?.platformFee) }; }).filter((x) => x.deals).sort((a, b) => b.deals - a.deals);
+  const fromSystem = closed.filter((d) => isSystemSource(d.source));
+  const system = { deals: fromSystem.length, share: closed.length ? Math.round((fromSystem.length / closed.length) * 100) : 0, volume: sum(fromSystem, dealValue), fee: sum(fromSystem, (d) => d.computation?.platformFee), byMonth: months.map((m) => [m.label, fromSystem.filter((d) => ym(d.closedAt) === m.key).length]) };
   return {
+    salesBySource, system,
     closed, byMonth, funnel, won, lost, conversion: won + lost ? Math.round((won / (won + lost)) * 100) : 0,
     avgReplyH, avgDaysToClose: daysToClose.length ? Math.round(sum(daysToClose) / daysToClose.length) : 0,
     sources, cats, cities, agents,
