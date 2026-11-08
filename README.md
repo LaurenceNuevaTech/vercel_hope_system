@@ -18,7 +18,7 @@ guide are kept locally in `docs/` (confidential, not in the repository).
 | `/` | Public website: search, listings (guest view hides the agent's number and the exact address), share links with QR flyer, agents, loan calculator, Sell with Hope |
 | `/account` | Customer portal: saved listings, messages with the agent, viewings, deals with document checklist, pay online (simulated PayMongo), receipts, profile & security |
 | `/admin` | Staff portal (accounts below) |
-| `/mobile` | Phone simulator: customer and agent app, PIN and Face ID / fingerprint sign-in, with the API call of every step |
+| `/mobile` | Phone simulator: customer and agent app, PIN and Face ID / fingerprint sign-in |
 | `/flows` | Flowcharts and the API reference for the mobile developer |
 
 Staff accounts (password `Demo@2026!`, authenticator code `123456`):

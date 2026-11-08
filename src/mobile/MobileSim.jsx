@@ -1,13 +1,12 @@
 // Phone simulator: shows how the Hope mobile app works (customer and agent),
-// including PIN and fingerprint / face sign-in, and logs the API call behind
-// every action for the mobile developer (same API as docs/).
+// including PIN and fingerprint / face sign-in. The endpoints behind each step are
+// documented in /flows (no API details are shown on this page).
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../lib/icons.jsx';
 import { audit, useStore } from '../lib/store.jsx';
 import { can, checkMfa, checkPassword, ensureCanAttempt, pinProblem, recordFailure } from '../lib/auth.js';
 import { approveListing, createInquiry, recordShare, replyInquiry, requestViewing, reviewListing, saveListing } from '../lib/actions.js';
-import { apiById } from '../lib/apiSpec.js';
 import { coverPhoto, listingPhotos } from '../lib/art.js';
 import { DEMO_MFA, DEMO_PASSWORD, DEMO_PIN, LEAD_STAGES, LISTING_STATUS } from '../lib/catalog.js';
 import { fmtDate, fmtDateTime, peso, priceLabel, priceShort, timeAgo } from '../lib/format.js';
@@ -19,7 +18,6 @@ const newDevice = () => ({ deviceId: `dev-${Math.random().toString(36).slice(2, 
 
 export default function MobileSim() {
   const { state, update } = useStore();
-  const [log, setLog] = useState([]);
   const [route, setRoute] = useState({ name: 'splash' });
   const [stack, setStack] = useState([]);
   const [sheet, setSheet] = useState(null);
@@ -27,10 +25,8 @@ export default function MobileSim() {
   const phone = state.phone || newDevice();
   useEffect(() => { if (!state.phone) update((d) => { d.phone = newDevice(); }); }, [state.phone, update]);
 
-  const api = (id, extra = {}) => {
-    const spec = apiById[id] || { method: 'GET', path: id };
-    setLog((l) => [{ k: Math.random(), at: new Date(), method: spec.method, path: spec.path, status: extra.status || 200, body: extra.body ?? spec.body, response: extra.response ?? spec.response ?? { success: true, message: 'OK' }, note: extra.note || spec.summary }, ...l].slice(0, 60));
-  };
+  // Marks where the real app calls the API (endpoints are documented in /flows). Nothing is shown here.
+  const api = () => {};
   const go = (name, params = {}) => { setStack((s) => [...s, route]); setRoute({ name, params }); };
   const back = () => setStack((s) => { const p = s[s.length - 1]; if (p) setRoute(p); return s.slice(0, -1); });
   const reset = (name, params = {}) => { setStack([]); setRoute({ name, params }); };
@@ -62,7 +58,7 @@ export default function MobileSim() {
         <div className="msim-left">
           <div className="msim-tools">
             <button type="button" className="btn ghost sm" onClick={() => { setRoute({ name: 'splash' }); setStack([]); setSheet(null); }}><Icon name="refresh" />Close & reopen app</button>
-            <button type="button" className="btn ghost sm" onClick={() => { setPhone((p, d) => { d.deviceCredentials.filter((c) => c.deviceId === p.deviceId && !c.revokedAt).forEach((c) => { c.revokedAt = new Date().toISOString(); c.revokedReason = 'app_uninstalled'; }); Object.assign(p, newDevice()); }); setRoute({ name: 'splash' }); setStack([]); setLog([]); }}><Icon name="trash" />Uninstall app</button>
+            <button type="button" className="btn ghost sm" onClick={() => { setPhone((p, d) => { d.deviceCredentials.filter((c) => c.deviceId === p.deviceId && !c.revokedAt).forEach((c) => { c.revokedAt = new Date().toISOString(); c.revokedReason = 'app_uninstalled'; }); Object.assign(p, newDevice()); }); setRoute({ name: 'splash' }); setStack([]); }}><Icon name="trash" />Uninstall app</button>
           </div>
           <div className="phone">
             <div className="phone-notch" />
@@ -77,18 +73,9 @@ export default function MobileSim() {
           <p className="mini" style={{ textAlign: 'center', maxWidth: 380 }}>Device ID <span className="mono">{phone.deviceId}</span>. Changes made here appear on the website and staff portal (same data).</p>
         </div>
         <div className="msim-right">
-          <div className="card">
-            <div className="card-h"><h3><Icon name="code" /> API calls (newest first)</h3><Link to="/flows" className="btn link sm">Flowcharts &amp; full API</Link></div>
-            <div className="api-log">
-              {log.length ? log.map((x) => (
-                <details key={x.k} className="api-row">
-                  <summary><span className={`m-${x.method.toLowerCase()}`}>{x.method}</span><code>{x.path}</code><span className={`st ${x.status >= 400 ? 'bad' : ''}`}>{x.status}</span><small>{x.at.toLocaleTimeString()}</small></summary>
-                  <p className="mini">{x.note}</p>
-                  {x.body && <><b className="mini">Request</b><pre>{JSON.stringify(x.body, null, 2)}</pre></>}
-                  <b className="mini">Response</b><pre>{JSON.stringify(x.response, null, 2)}</pre>
-                </details>
-              )) : <p className="mini" style={{ padding: 16 }}>Use the app; each step shows the endpoint it calls, with a sample request and response.</p>}
-            </div>
+          <div className="card card-pad row between">
+            <div><h3 style={{ margin: 0 }}>How the app works</h3><p className="mini" style={{ margin: '4px 0 0' }}>Step-by-step flowcharts and the API reference for the mobile developer.</p></div>
+            <Link to="/flows" className="btn soft sm"><Icon name="flow" />Flowcharts &amp; full API</Link>
           </div>
           <div className="card card-pad">
             <h3>This phone's secure storage (Keychain / Keystore)</h3>
