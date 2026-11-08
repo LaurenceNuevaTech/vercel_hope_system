@@ -5,6 +5,7 @@ import { audit, categoryLabel, meCustomer, useStore } from '../lib/store.jsx';
 import { createInquiry, requestViewing } from '../lib/actions.js';
 import { listingPhotos } from '../lib/art.js';
 import { addDays, fmtDate, peso, priceLabel } from '../lib/format.js';
+import { CONDITIONS, conditionLabel } from '../lib/catalog.js';
 import { Avatar, Badge, Empty, Gallery, ListingCard, Modal, Pager, ShareModal } from '../components.jsx';
 import { AccountGate, Calculator } from './SiteApp.jsx';
 
@@ -41,6 +42,7 @@ export function Browse() {
     if (f.purpose) r = r.filter((l) => l.purpose === f.purpose);
     if (f.group) r = r.filter((l) => l.group === f.group);
     if (f.category) r = r.filter((l) => l.category === f.category);
+    if (f.cond) r = r.filter((l) => (l.condition || 'pre_owned') === f.cond);
     if (f.city) r = r.filter((l) => l.city === f.city);
     if (f.beds) r = r.filter((l) => (l.specs.bedrooms || 0) >= Number(f.beds));
     if (f.min) r = r.filter((l) => l.price >= Number(f.min));
@@ -52,7 +54,7 @@ export function Browse() {
   }, [state.listings, sp]);
   const per = 12;
   const pages = Math.max(1, Math.ceil(rows.length / per));
-  const title = f.group === 'vehicle' ? 'Vehicles' : f.purpose === 'rent' ? 'For rent' : f.purpose === 'sale' ? 'For sale' : 'All listings';
+  const title = f.cond === 'brand_new' ? `Brand new${f.group === 'vehicle' ? ' vehicles' : ''}` : f.group === 'vehicle' ? 'Vehicles' : f.purpose === 'rent' ? 'For rent' : f.purpose === 'sale' ? 'For sale' : 'All listings';
 
   return (
     <div className="wrap page">
@@ -62,6 +64,9 @@ export function Browse() {
       <div className="filters card">
         <div className="chips">
           {[['', 'All'], ['sale', 'For sale'], ['rent', 'For rent']].map(([k, t]) => <button type="button" key={k} className={`chip ${(f.purpose || '') === k ? 'on' : ''}`} onClick={() => set('purpose', k)}>{t}</button>)}
+          <span style={{ width: 10 }} />
+          <span style={{ width: 10 }} />
+          {[['', 'Any condition'], ...Object.entries(CONDITIONS).map(([k, v]) => [k, v.label])].map(([k, t]) => <button type="button" key={`c${k}`} className={`chip ${(f.cond || '') === k ? 'on' : ''}`} onClick={() => set('cond', k)}>{k === 'brand_new' && <Icon name="sparkle" />}{t}</button>)}
           <span style={{ width: 10 }} />
           {[['', 'Everything'], ['property', 'Property'], ['vehicle', 'Vehicles']].map(([k, t]) => <button type="button" key={k} className={`chip ${(f.group || '') === k ? 'on' : ''}`} onClick={() => { const n = new URLSearchParams(sp); if (k) n.set('group', k); else n.delete('group'); n.delete('category'); setSp(n, { replace: true }); }}>{t}</button>)}
         </div>
@@ -122,6 +127,7 @@ export function ListingPage() {
           <div className="card card-pad" style={{ marginTop: 16 }}>
             <h3>Details</h3>
             <div className="spec-grid">
+              <Spec icon="sparkle" label="Condition" value={l.group === 'property' && (l.condition || 'pre_owned') === 'pre_owned' ? null : conditionLabel(l)} />
               {l.group === 'vehicle' ? (<>
                 <Spec icon="car" label="Make / model" value={`${s.make} ${s.model}`} /><Spec icon="calendar" label="Year" value={s.year} /><Spec icon="gauge" label="Mileage" value={s.mileage != null ? `${Number(s.mileage).toLocaleString()} km` : null} />
                 <Spec icon="gears" label="Transmission" value={s.transmission} /><Spec icon="fuel" label="Fuel" value={s.fuel} /><Spec icon="tag" label="Body" value={s.bodyType} /><Spec icon="palette" label="Color" value={s.color} />
@@ -141,7 +147,7 @@ export function ListingPage() {
         </div>
         <aside className="ld-side">
           <div className="card card-pad sticky">
-            <div className="row" style={{ gap: 6, marginBottom: 6 }}><Badge tone={l.purpose === 'rent' ? 'info' : 'solid'}>{l.purpose === 'rent' ? 'For Rent' : 'For Sale'}</Badge>{l.status === 'reserved' && <Badge tone="accent">Reserved</Badge>}{closed && <Badge tone="brand">{l.status === 'sold' ? 'Sold' : 'Rented'}</Badge>}<Badge tone="ok" icon="verified">Verified</Badge></div>
+            <div className="row" style={{ gap: 6, marginBottom: 6 }}><Badge tone={l.purpose === 'rent' ? 'info' : 'solid'}>{l.purpose === 'rent' ? 'For Rent' : 'For Sale'}</Badge>{l.status === 'reserved' && <Badge tone="accent">Reserved</Badge>}{closed && <Badge tone="brand">{l.status === 'sold' ? 'Sold' : 'Rented'}</Badge>}{l.condition && l.condition !== 'pre_owned' && <Badge tone={l.condition === 'brand_new' ? 'gold' : 'info'} icon={l.condition === 'brand_new' ? 'sparkle' : undefined}>{CONDITIONS[l.condition].label}</Badge>}<Badge tone="ok" icon="verified">Verified</Badge></div>
             <h1 className="ld-title">{l.title}</h1>
             <div className="ld-price">{priceLabel(l)}</div>
             <div className="mini">{l.negotiable ? 'Negotiable · ' : ''}{l.code} · listed {fmtDate(l.publishedAt)}</div>

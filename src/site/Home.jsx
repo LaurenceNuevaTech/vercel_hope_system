@@ -16,6 +16,7 @@ export default function Home() {
   const cms = state.cms;
   const live = state.listings.filter((l) => ['published', 'reserved'].includes(l.status) && !l.deleted);
   const featured = live.filter((l) => l.featured).slice(0, 6);
+  const brandNew = live.filter((l) => l.condition === 'brand_new').sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)).slice(0, 8);
   const rentals = live.filter((l) => l.purpose === 'rent').slice(0, 4);
   const vehicles = live.filter((l) => l.group === 'vehicle' && l.purpose === 'sale').slice(0, 4);
   const cats = state.categories.filter((c) => c.active);
@@ -68,6 +69,13 @@ export default function Home() {
         </div>
       </section>
 
+      {brandNew.length > 0 && (
+        <section className="wrap sec">
+          <div className="sec-h"><div><h2>Brand-new homes and cars</h2><p className="muted">Ready-for-occupancy homes from developers and 2026 units from dealers, with warranty and financing.</p></div><Link to="/listings?cond=brand_new" className="btn ghost sm">All brand new<Icon name="right" /></Link></div>
+          <div className="lgrid">{brandNew.map((l) => <ListingCard key={l.id} listing={l} fav={isFav(l.id)} onFav={toggle} />)}</div>
+        </section>
+      )}
+
       {featured.length > 0 && (
         <section className="wrap sec">
           <div className="sec-h"><div><h2>Featured listings</h2><p className="muted">Hand-picked by the Hope team.</p></div><Link to="/listings" className="btn ghost sm">View all<Icon name="right" /></Link></div>
@@ -81,7 +89,7 @@ export default function Home() {
       </section>
 
       <section className="wrap sec">
-        <div className="sec-h"><div><h2>Cars and motorcycles</h2><p className="muted">Pre-owned vehicles with complete papers.</p></div><Link to="/listings?group=vehicle" className="btn ghost sm">All vehicles<Icon name="right" /></Link></div>
+        <div className="sec-h"><div><h2>Cars and motorcycles</h2><p className="muted">Brand-new units from dealers and quality pre-owned vehicles with complete papers.</p></div><Link to="/listings?group=vehicle" className="btn ghost sm">All vehicles<Icon name="right" /></Link></div>
         <div className="lgrid">{vehicles.map((l) => <ListingCard key={l.id} listing={l} fav={isFav(l.id)} onFav={toggle} />)}</div>
       </section>
 

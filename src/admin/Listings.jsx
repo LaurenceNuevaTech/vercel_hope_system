@@ -5,7 +5,7 @@ import { audit, categoryLabel, customerName, me, notify, readPhoto, staffName, u
 import { can, canApprove, scope, visible } from '../lib/auth.js';
 import { approveListing, deleteListing, restoreListing, reviewListing, saveListing, setListingStatus, submitListing, toggleFeatured } from '../lib/actions.js';
 import { coverPhoto, listingPhotos } from '../lib/art.js';
-import { LEAD_STAGES, LISTING_STATUS, PURPOSES } from '../lib/catalog.js';
+import { CONDITIONS, LEAD_STAGES, LISTING_STATUS, PURPOSES, conditionLabel } from '../lib/catalog.js';
 import { fmtDate, fmtDateTime, peso, priceLabel, sum, timeAgo } from '../lib/format.js';
 import { Badge, Empty, Field, Gallery, ListingStatus, Modal, PromptModal, ShareModal, Tabs } from '../components.jsx';
 import { Page } from './AdminApp.jsx';
@@ -46,7 +46,7 @@ export function Listings() {
             {rows.map((l) => (
               <tr key={l.id} className="click" onClick={() => nav(`/admin/listings/${l.id}`)}>
                 <td><div className="row" style={{ flexWrap: 'nowrap' }}><img src={coverPhoto(l)} alt="" className="thumb" /><div><b className="ellipsis" style={{ display: 'block', maxWidth: 300 }}>{l.title}</b><span className="mini mono">{l.code}</span> {l.featured && <Badge tone="accent" icon="star">Featured</Badge>}</div></div></td>
-                <td>{categoryLabel(state, l.category)}<div className="mini">{PURPOSES[l.purpose]}</div></td>
+                <td>{categoryLabel(state, l.category)}<div className="mini">{PURPOSES[l.purpose]} · {CONDITIONS[l.condition || 'pre_owned'].label}</div></td>
                 <td className="r num nowrap">{priceLabel(l)}</td>
                 <td>{staffName(state, l.agentId)}</td>
                 <td><ListingStatus listing={l} />{l.deleted && <div className="mini">{l.deleted.reason}</div>}</td>
@@ -61,7 +61,7 @@ export function Listings() {
   );
 }
 
-const EMPTY = { title: '', purpose: 'sale', category: 'house_lot', price: '', priceUnit: 'total', negotiable: true, city: '', barangay: '', address: '', description: '', features: [], specs: {}, photos: [], ownerName: '', ownerPhone: '', authorityFile: '' };
+const EMPTY = { title: '', purpose: 'sale', condition: 'brand_new', category: 'house_lot', price: '', priceUnit: 'total', negotiable: true, city: '', barangay: '', address: '', description: '', features: [], specs: {}, photos: [], ownerName: '', ownerPhone: '', authorityFile: '' };
 
 export function ListingEditor() {
   const { id } = useParams();
@@ -117,6 +117,7 @@ export function ListingEditor() {
               <Field label="Purpose"><select value={f.purpose} onChange={(e) => set('purpose', e.target.value)}><option value="sale">For sale</option><option value="rent">For rent</option></select></Field>
               <Field label={f.purpose === 'rent' ? 'Rent' : 'Price'}><input type="number" value={f.price} onChange={(e) => set('price', e.target.value)} /></Field>
             </div>
+            <Field label="Condition"><select value={f.condition || 'pre_owned'} onChange={(e) => set('condition', e.target.value)}>{Object.keys(CONDITIONS).map((k) => <option key={k} value={k}>{conditionLabel({ condition: k, group })}</option>)}</select></Field>
             <div className="row">
               {f.purpose === 'rent' && <select className="input" style={{ width: 'auto' }} value={f.priceUnit === 'day' ? 'day' : 'month'} onChange={(e) => set('priceUnit', e.target.value)}><option value="month">per month</option><option value="day">per day</option></select>}
               <label className="check"><input type="checkbox" checked={f.negotiable} onChange={(e) => set('negotiable', e.target.checked)} />Negotiable</label>
@@ -222,7 +223,7 @@ export function ListingDetail() {
               <div className="card card-pad"><h3>Description</h3><p style={{ whiteSpace: 'pre-line' }}>{l.description}</p><div className="chips">{l.features.map((x) => <span key={x} className="chip">{x}</span>)}</div></div>
             </div>
             <div className="stack">
-              <div className="card card-pad"><h3>Details</h3><dl className="kv">{Object.entries(l.specs).filter(([, v]) => v !== undefined && v !== '').flatMap(([k, v]) => [<dt key={`${k}t`}>{k.replace(/([A-Z])/g, ' $1').toLowerCase()}</dt>, <dd key={`${k}d`}>{String(v)}</dd>])}<dt>Address</dt><dd>{l.address}</dd><dt>Owner</dt><dd>{l.ownerName} · {l.ownerPhone}</dd><dt>Authority</dt><dd>{l.authority?.type} · {l.authority?.file || '—'} (until {fmtDate(l.authority?.validUntil)})</dd><dt>Valid until</dt><dd>{fmtDate(l.expiresAt)}</dd></dl></div>
+              <div className="card card-pad"><h3>Details</h3><dl className="kv"><dt>Condition</dt><dd>{conditionLabel(l)}</dd>{Object.entries(l.specs).filter(([, v]) => v !== undefined && v !== '').flatMap(([k, v]) => [<dt key={`${k}t`}>{k.replace(/([A-Z])/g, ' $1').toLowerCase()}</dt>, <dd key={`${k}d`}>{String(v)}</dd>])}<dt>Address</dt><dd>{l.address}</dd><dt>Owner</dt><dd>{l.ownerName} · {l.ownerPhone}</dd><dt>Authority</dt><dd>{l.authority?.type} · {l.authority?.file || '—'} (until {fmtDate(l.authority?.validUntil)})</dd><dt>Valid until</dt><dd>{fmtDate(l.expiresAt)}</dd></dl></div>
               <div className="card card-pad"><h3>Performance</h3><dl className="kv"><dt>Views</dt><dd>{l.views.toLocaleString()}</dd><dt>Shares</dt><dd>{totalShares} <span className="mini">(Facebook {l.shares.facebook}, Messenger {l.shares.messenger}, link {l.shares.link}, Viber {l.shares.viber}, QR {l.shares.qr})</span></dd><dt>Inquiries</dt><dd>{leads.length}</dd><dt>Viewings</dt><dd>{state.viewings.filter((v) => v.listingId === l.id).length}</dd></dl></div>
               {!l.deleted && (
                 <div className="card card-pad stack">

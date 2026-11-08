@@ -36,14 +36,16 @@ export const ym = (d) => ymd(d).slice(0, 7);
 export const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 export const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
+/** "5 min ago", "3 d ago", "in 2 h" (future); older than 30 days → the date. */
 export function timeAgo(iso) {
-  const s = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 0) return `in ${timeAgo(new Date(Date.now() - s * 1000 * 2).toISOString()).replace(' ago', '')}`;
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return '—';
+  const diff = Math.round((Date.now() - t) / 1000);
+  const s = Math.abs(diff);
   if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
-  if (s < 86400 * 30) return `${Math.floor(s / 86400)} d ago`;
-  return fmtDate(iso);
+  const v = s < 3600 ? `${Math.floor(s / 60)} min` : s < 86400 ? `${Math.floor(s / 3600)} h` : s < 86400 * 30 ? `${Math.floor(s / 86400)} d` : null;
+  if (!v) return fmtDate(iso);
+  return diff >= 0 ? `${v} ago` : `in ${v}`;
 }
 
 export const uid = (p = 'id') => `${p}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-3)}`;

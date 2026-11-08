@@ -418,7 +418,7 @@ function needAccount(ctx, reason) {
 }
 
 function MCard({ l, ctx }) {
-  return <button type="button" className="m-card" onClick={() => { ctx.api('listings.show'); ctx.go('listing', { id: l.id }); }}><img src={coverPhoto(l)} alt="" /><div><b>{priceShort(l)}</b><span>{l.title}</span><small>{l.city}</small></div></button>;
+  return <button type="button" className="m-card" onClick={() => { ctx.api('listings.show'); ctx.go('listing', { id: l.id }); }}><img src={coverPhoto(l)} alt="" /><div><b>{priceShort(l)}</b><span>{l.title}</span><small>{l.condition === 'brand_new' ? '✦ Brand new · ' : l.condition === 'pre_selling' ? 'Pre-selling · ' : ''}{l.city}</small></div></button>;
 }
 
 function Home({ ctx }) {
@@ -472,7 +472,7 @@ function ListingScreen({ ctx, id }) {
     <div className="m-page">
       <div className="m-gallery"><img src={photos[i]} alt="" onClick={() => setI((i + 1) % photos.length)} /><button type="button" className="m-icon over" onClick={ctx.back} aria-label="Back"><Icon name="left" /></button><span className="m-count">{i + 1}/{photos.length}</span></div>
       <div className="m-body m-pad">
-        <div className="row" style={{ gap: 6 }}><Badge tone={l.purpose === 'rent' ? 'info' : 'solid'}>{l.purpose === 'rent' ? 'For rent' : 'For sale'}</Badge>{l.status === 'reserved' && <Badge tone="accent">Reserved</Badge>}</div>
+        <div className="row" style={{ gap: 6 }}><Badge tone={l.purpose === 'rent' ? 'info' : 'solid'}>{l.purpose === 'rent' ? 'For rent' : 'For sale'}</Badge>{l.status === 'reserved' && <Badge tone="accent">Reserved</Badge>}{l.condition === 'brand_new' && <Badge tone="gold">Brand new</Badge>}{l.condition === 'pre_selling' && <Badge tone="info">Pre-selling</Badge>}</div>
         <h3 style={{ margin: '8px 0 2px' }}>{l.title}</h3>
         <div className="m-price">{priceLabel(l)}</div>
         <div className="mini"><Icon name="pin" size={13} /> {cust || state.settings.listings.sharing.guestSeesAddress ? l.address : `Brgy. ${l.barangay}, ${l.city}`}</div>

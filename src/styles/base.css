@@ -98,6 +98,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
 .badge.accent { background: var(--accent-50); color: var(--accent-d); }
 .badge.muted { background: #EEF0F3; color: #5B6474; }
 .badge.solid { background: var(--brand); color: #fff; }
+.badge.gold { background: var(--accent); color: var(--on-accent); }
 
 /* cards & tables */
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow); }

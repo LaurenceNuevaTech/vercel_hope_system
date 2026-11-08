@@ -5,7 +5,7 @@ import Icon from './lib/icons.jsx';
 import { useStore, categoryLabel } from './lib/store.jsx';
 import { recordShare } from './lib/actions.js';
 import { coverPhoto } from './lib/art.js';
-import { LISTING_STATUS } from './lib/catalog.js';
+import { CONDITIONS, LISTING_STATUS } from './lib/catalog.js';
 import { initials, priceLabel, priceShort } from './lib/format.js';
 
 /** Hope mark: a roof over an "H". Replaced by the uploaded logo (Settings → Company & branding). */
@@ -196,7 +196,7 @@ export function ListingCard({ listing, onFav, fav, to }) {
     <article className="lcard">
       <Link to={to || `/l/${listing.slug}`} className="lcard-img">
         <img src={coverPhoto(listing)} alt="" loading="lazy" />
-        <span className="lcard-tags"><Badge tone={listing.purpose === 'rent' ? 'info' : 'solid'}>{listing.purpose === 'rent' ? 'For Rent' : 'For Sale'}</Badge>{listing.status === 'reserved' && <Badge tone="accent">Reserved</Badge>}{listing.featured && <Badge tone="accent" icon="star">Featured</Badge>}</span>
+        <span className="lcard-tags"><Badge tone={listing.purpose === 'rent' ? 'info' : 'solid'}>{listing.purpose === 'rent' ? 'For Rent' : 'For Sale'}</Badge>{listing.condition && listing.condition !== 'pre_owned' && <Badge tone={listing.condition === 'brand_new' ? 'gold' : 'info'} icon={listing.condition === 'brand_new' ? 'sparkle' : undefined}>{CONDITIONS[listing.condition].label}</Badge>}{listing.status === 'reserved' && <Badge tone="accent">Reserved</Badge>}{listing.featured && <Badge tone="accent" icon="star">Featured</Badge>}</span>
       </Link>
       {onFav && <button type="button" className={`fav ${fav ? 'on' : ''}`} onClick={() => onFav(listing)} aria-label={fav ? 'Remove from saved' : 'Save'}><Icon name="heart" /></button>}
       <div className="lcard-b">

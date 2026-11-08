@@ -22,6 +22,14 @@ export const DEFAULT_CATEGORIES = [
 
 export const PURPOSES = { sale: 'For Sale', rent: 'For Rent' };
 
+// Condition of the item. Hope mostly sells brand-new units (developers and dealers).
+export const CONDITIONS = {
+  brand_new: { label: 'Brand new', property: 'Brand new · ready for occupancy', vehicle: 'Brand new · 0 km, with warranty', tone: 'accent' },
+  pre_selling: { label: 'Pre-selling', property: 'Pre-selling (under construction)', vehicle: 'Pre-order', tone: 'info' },
+  pre_owned: { label: 'Pre-owned', property: 'Resale (pre-owned)', vehicle: 'Pre-owned (second-hand)', tone: 'muted' },
+};
+export const conditionLabel = (l) => (CONDITIONS[l?.condition] || CONDITIONS.pre_owned)[l?.group === 'vehicle' ? 'vehicle' : 'property'];
+
 export const LISTING_STATUS = {
   draft: { label: 'Draft', tone: 'muted', note: 'Being prepared by the agent. Not visible to the public.' },
   pending: { label: 'Pending approval', tone: 'warn', note: 'Submitted; waiting for a Manager (or higher) to review.' },
@@ -458,8 +466,8 @@ export const DEFAULT_CMS = {
     { name: 'Rhea S.', text: 'Sold my SUV through Hope. They handled the inquiries so I didn\'t have to.', where: 'Sold a car' },
   ],
   locations: ['Imus, Cavite', 'Bacoor, Cavite', 'Dasmariñas, Cavite', 'Silang, Cavite', 'Tagaytay, Cavite', 'Santa Rosa, Laguna', 'Biñan, Laguna', 'Calamba, Laguna', 'Taguig (BGC)', 'Makati', 'Pasig', 'Quezon City', 'Mandaluyong', 'Parañaque', 'Muntinlupa (Alabang)', 'Las Piñas'],
-  propertyFeatures: ['Swimming pool', 'Gym', 'Garden', 'Balcony', 'Maid\'s room', 'Gated community', '24/7 security', 'Near school', 'Near mall', 'Pet friendly', 'Fully furnished', 'Semi-furnished', 'Parking slot', 'Clubhouse', 'Flood-free'],
-  vehicleFeatures: ['Casa maintained', 'First owner', 'Complete papers', 'Low mileage', 'Dashcam', 'Reverse camera', 'Push start', 'Leather seats', 'New tires', 'Financing available'],
+  propertyFeatures: ['Ready for occupancy', 'Developer unit', 'Bank / Pag-IBIG financing', 'Swimming pool', 'Gym', 'Garden', 'Balcony', 'Maid\'s room', 'Gated community', '24/7 security', 'Near school', 'Near mall', 'Pet friendly', 'Fully furnished', 'Semi-furnished', 'Parking slot', 'Clubhouse', 'Flood-free'],
+  vehicleFeatures: ['Brand new', 'With warranty', 'Free PMS', 'Low down payment', 'Casa maintained', 'First owner', 'Complete papers', 'Low mileage', 'Dashcam', 'Reverse camera', 'Push start', 'Leather seats', 'New tires', 'Financing available'],
   pages: [
     { slug: 'about', title: 'About Hope', body: 'Hope Account Specialist helps families and businesses buy, sell and rent homes, condominiums, lots, commercial spaces and vehicles.\n\nOur agents are trained account specialists. Every listing is reviewed by a Manager before it is published, and every payment is receipted in the system.' },
     { slug: 'terms', title: 'Terms of use', body: 'By using the Hope website and app you agree to provide true information in inquiries and submissions. Listings are posted by Hope agents on behalf of owners; prices and availability may change without notice until a reservation is made.' },

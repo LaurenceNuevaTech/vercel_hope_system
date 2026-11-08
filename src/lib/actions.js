@@ -17,7 +17,7 @@ const teamManager = (draft, staffId) => {
 };
 
 // ---------------------------------------------------------------- listings
-const TRACKED = [['title', 'Title'], ['purpose', 'Purpose'], ['category', 'Category'], ['price', 'Price'], ['priceUnit', 'Price unit'], ['negotiable', 'Negotiable'], ['city', 'City'], ['barangay', 'Barangay'], ['address', 'Address'], ['description', 'Description'], ['features', 'Features'], ['specs', 'Details'], ['photos', 'Photos'], ['ownerName', 'Owner'], ['ownerPhone', 'Owner phone'], ['agentId', 'Agent']];
+const TRACKED = [['title', 'Title'], ['purpose', 'Purpose'], ['category', 'Category'], ['condition', 'Condition'], ['price', 'Price'], ['priceUnit', 'Price unit'], ['negotiable', 'Negotiable'], ['city', 'City'], ['barangay', 'Barangay'], ['address', 'Address'], ['description', 'Description'], ['features', 'Features'], ['specs', 'Details'], ['photos', 'Photos'], ['ownerName', 'Owner'], ['ownerPhone', 'Owner phone'], ['agentId', 'Agent']];
 const show = (k, v, draft) => {
   if (k === 'photos') return `${(v || []).length} photo(s)`;
   if (k === 'agentId') return draft.staff.find((s) => s.id === v)?.name || v;

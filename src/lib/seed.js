@@ -6,7 +6,7 @@ import { DEFAULT_CATEGORIES, DEFAULT_CMS, DEFAULT_ROLES, INTEGRATIONS, defaultSe
 import { addDays, pad, rng, slugify, ym } from './format.js';
 import { computeDeal } from './money.js';
 
-export const DATA_VERSION = 5;
+export const DATA_VERSION = 6;
 
 const iso = (d) => new Date(d).toISOString();
 
@@ -44,20 +44,22 @@ const CUSTOMERS = [
 
 // [category, purpose, title, city, barangay, price, unit, specs, features, agent, status, featured]
 const P = (category, purpose, title, city, barangay, price, unit, specs, features, agentId, status = 'published', featured = false) => ({ category, purpose, title, city, barangay, price, unit, specs, features, agentId, status, featured });
+const NEW = (...a) => ({ ...P(...a), condition: 'brand_new' });
+const PRE = (...a) => ({ ...P(...a), condition: 'pre_selling' });
 const house = (b, ba, fa, la, pk, furn = 'Unfurnished') => ({ bedrooms: b, bathrooms: ba, floorArea: fa, lotArea: la, parking: pk, furnishing: furn });
 const unit = (b, ba, fa, pk, floor, furn = 'Unfurnished') => ({ bedrooms: b, bathrooms: ba, floorArea: fa, parking: pk, floorLevel: floor, furnishing: furn });
 const lotSpec = (la, zoning = 'Residential') => ({ lotArea: la, zoning, title: 'Clean title (TCT)' });
 const car = (make, model, year, mileage, transmission, fuel, bodyType, color) => ({ make, model, year, mileage, transmission, fuel, bodyType, color });
 
 const ACTIVE = [
-  P('house_lot', 'sale', 'Modern 3BR Single Detached House in Imus', 'Imus, Cavite', 'Anabu II', 6800000, 'total', house(3, 2, 120, 150, 1), ['Gated community', '24/7 security', 'Near school', 'Flood-free'], 'u_ag4', 'reserved', true),
-  P('house_lot', 'sale', 'Corner House & Lot with Garden, Bacoor', 'Bacoor, Cavite', 'Molino III', 8950000, 'total', house(4, 3, 180, 220, 2), ['Garden', 'Gated community', 'Maid\'s room', 'Parking slot'], 'u_ag4', 'published', true),
-  P('townhouse', 'sale', 'Affordable 2BR Townhouse near Dasmariñas Bayan', 'Dasmariñas, Cavite', 'Salitran', 3200000, 'total', house(2, 1, 60, 45, 1), ['Near school', 'Near mall'], 'u_ag4'),
+  NEW('house_lot', 'sale', 'Modern 3BR Single Detached House in Imus', 'Imus, Cavite', 'Anabu II', 6800000, 'total', house(3, 2, 120, 150, 1), ['Gated community', '24/7 security', 'Near school', 'Flood-free'], 'u_ag4', 'reserved', true),
+  NEW('house_lot', 'sale', 'Corner House & Lot with Garden, Bacoor', 'Bacoor, Cavite', 'Molino III', 8950000, 'total', house(4, 3, 180, 220, 2), ['Garden', 'Gated community', 'Maid\'s room', 'Parking slot'], 'u_ag4', 'published', true),
+  NEW('townhouse', 'sale', 'Affordable 2BR Townhouse near Dasmariñas Bayan', 'Dasmariñas, Cavite', 'Salitran', 3200000, 'total', house(2, 1, 60, 45, 1), ['Near school', 'Near mall'], 'u_ag4'),
   P('house_lot', 'sale', 'Tagaytay Ridge View Rest House', 'Tagaytay, Cavite', 'Kaybagal South', 14500000, 'total', house(3, 3, 160, 400, 3, 'Fully furnished'), ['Garden', 'Balcony', 'Fully furnished', 'Pet friendly'], 'u_ag5', 'published', true),
   P('lot', 'sale', 'Silang Residential Lot – 250 sqm, Clean Title', 'Silang, Cavite', 'Biga I', 3750000, 'total', lotSpec(250), ['Gated community', 'Flood-free'], 'u_ag5'),
   P('lot', 'sale', 'Farm Lot with Fruit Trees – 1,000 sqm', 'Silang, Cavite', 'Lalaan II', 4500000, 'total', lotSpec(1000, 'Agricultural'), ['Garden'], 'u_ag5', 'draft'),
-  P('house_lot', 'sale', 'Santa Rosa 2-Storey Family Home near Nuvali', 'Santa Rosa, Laguna', 'Don Jose', 9800000, 'total', house(4, 3, 200, 180, 2), ['Clubhouse', 'Swimming pool', 'Gated community'], 'u_ag6', 'published', true),
-  P('townhouse', 'sale', 'Biñan 3BR End-Unit Townhouse', 'Biñan, Laguna', 'Langkiwa', 4600000, 'total', house(3, 2, 85, 60, 1), ['Near school', 'Gated community'], 'u_ag6', 'pending'),
+  NEW('house_lot', 'sale', 'Santa Rosa 2-Storey Family Home near Nuvali', 'Santa Rosa, Laguna', 'Don Jose', 9800000, 'total', house(4, 3, 200, 180, 2), ['Clubhouse', 'Swimming pool', 'Gated community'], 'u_ag6', 'published', true),
+  NEW('townhouse', 'sale', 'Biñan 3BR End-Unit Townhouse', 'Biñan, Laguna', 'Langkiwa', 4600000, 'total', house(3, 2, 85, 60, 1), ['Near school', 'Gated community'], 'u_ag6', 'pending'),
   P('commercial', 'sale', 'Commercial Lot along National Highway, Calamba', 'Calamba, Laguna', 'Real', 22000000, 'total', lotSpec(800, 'Commercial'), ['Flood-free'], 'u_ag6'),
   P('house_lot', 'rent', '3BR House for Rent in a Gated Subdivision, Imus', 'Imus, Cavite', 'Malagasang', 28000, 'month', house(3, 2, 110, 130, 1, 'Semi-furnished'), ['Gated community', 'Semi-furnished', 'Pet friendly'], 'u_ag4'),
   P('townhouse', 'rent', 'Townhouse near De La Salle Dasmariñas', 'Dasmariñas, Cavite', 'Zone IV', 12000, 'month', house(2, 1, 55, 40, 0, 'Semi-furnished'), ['Near school'], 'u_ag4', 'changes'),
@@ -68,12 +70,12 @@ const ACTIVE = [
   P('motorcycle', 'sale', '2022 Yamaha NMAX 155 ABS', 'Santa Rosa, Laguna', 'Tagapo', 118000, 'total', car('Yamaha', 'NMAX 155', 2022, 5100, 'Automatic', 'Gasoline', 'Scooter', 'Matte Black'), ['Low mileage', 'First owner'], 'u_ag6', 'pending'),
   P('car', 'sale', '2020 Toyota Vios 1.3 XLE CVT', 'Imus, Cavite', 'Tanzang Luma', 585000, 'total', car('Toyota', 'Vios 1.3 XLE', 2020, 39000, 'Automatic', 'Gasoline', 'Sedan', 'Silver'), ['Casa maintained', 'Financing available'], 'u_ag4'),
   P('car', 'rent', 'Toyota Innova for Rent – with Driver Option', 'Dasmariñas, Cavite', 'Sampaloc', 3500, 'day', car('Toyota', 'Innova 2.8 E', 2022, 30000, 'Automatic', 'Diesel', 'MPV', 'Silver'), ['Casa maintained'], 'u_ag6'),
-  P('condo', 'sale', '1BR Condo in BGC with Parking', 'Taguig (BGC)', 'Fort Bonifacio', 12500000, 'total', unit(1, 1, 55, 1, 21, 'Fully furnished'), ['Swimming pool', 'Gym', '24/7 security', 'Fully furnished', 'Parking slot'], 'u_ag2', 'reserved', true),
+  NEW('condo', 'sale', '1BR Condo in BGC with Parking', 'Taguig (BGC)', 'Fort Bonifacio', 12500000, 'total', unit(1, 1, 55, 1, 21, 'Fully furnished'), ['Swimming pool', 'Gym', '24/7 security', 'Fully furnished', 'Parking slot'], 'u_ag2', 'reserved', true),
   P('condo', 'sale', 'Studio Unit near Ayala Avenue, Makati', 'Makati', 'Bel-Air', 6200000, 'total', unit(0, 1, 24, 0, 15), ['Gym', 'Swimming pool', '24/7 security'], 'u_ag1'),
   P('condo', 'sale', '2BR Corner Unit in Ortigas Center', 'Pasig', 'San Antonio', 9300000, 'total', unit(2, 2, 68, 1, 18, 'Semi-furnished'), ['Balcony', 'Gym', 'Swimming pool', 'Parking slot'], 'u_ag2', 'published', true),
   P('condo', 'sale', 'Pre-selling 1BR in Mandaluyong (2028 Turnover)', 'Mandaluyong', 'Highway Hills', 5400000, 'total', unit(1, 1, 32, 0, 12), ['Swimming pool', 'Gym', 'Near mall'], 'u_ag1', 'pending'),
   P('house_lot', 'sale', '4BR House near UP Diliman, Quezon City', 'Quezon City', 'Teachers Village', 18500000, 'total', house(4, 3, 240, 300, 2), ['Garden', 'Maid\'s room', 'Near school'], 'u_ag2'),
-  P('townhouse', 'sale', 'Parañaque 3BR Townhouse with 2 Parking', 'Parañaque', 'BF Homes', 7900000, 'total', house(3, 3, 140, 90, 2), ['Gated community', 'Parking slot'], 'u_mgr1'),
+  NEW('townhouse', 'sale', 'Parañaque 3BR Townhouse with 2 Parking', 'Parañaque', 'BF Homes', 7900000, 'total', house(3, 3, 140, 90, 2), ['Gated community', 'Parking slot'], 'u_mgr1'),
   P('house_lot', 'sale', 'Alabang Hills Family Home with Pool', 'Muntinlupa (Alabang)', 'Cupang', 32000000, 'total', house(5, 5, 420, 500, 3), ['Swimming pool', 'Garden', 'Maid\'s room', 'Gated community', '24/7 security'], 'u_ag2', 'published', true),
   P('condo', 'rent', 'Fully-furnished 1BR for Rent, BGC', 'Taguig (BGC)', 'Fort Bonifacio', 55000, 'month', unit(1, 1, 50, 1, 27, 'Fully furnished'), ['Fully furnished', 'Gym', 'Swimming pool', 'Pet friendly'], 'u_ag1', 'reserved'),
   P('condo', 'rent', 'Studio for Rent in Makati CBD', 'Makati', 'San Lorenzo', 25000, 'month', unit(0, 1, 26, 0, 9, 'Fully furnished'), ['Fully furnished', 'Gym', 'Near mall'], 'u_ag1'),
@@ -88,20 +90,39 @@ const ACTIVE = [
   P('car', 'sale', '2023 Toyota Raize 1.0 Turbo', 'Mandaluyong', 'Wack-Wack', 920000, 'total', car('Toyota', 'Raize 1.0 Turbo', 2023, 12000, 'Automatic', 'Gasoline', 'SUV', 'Turquoise'), ['First owner', 'Low mileage'], 'u_ag3', 'pending'),
   P('motorcycle', 'sale', '2020 Honda ADV 150', 'Makati', 'Guadalupe', 135000, 'total', car('Honda', 'ADV 150', 2020, 14000, 'Automatic', 'Gasoline', 'Scooter', 'Matte Gray'), ['Complete papers'], 'u_ag3'),
   P('car', 'rent', 'Toyota Vios for Rent – Self-drive', 'Pasig', 'Caniogan', 1800, 'day', car('Toyota', 'Vios 1.3 E', 2023, 18000, 'Automatic', 'Gasoline', 'Sedan', 'Gray'), ['Casa maintained'], 'u_ag3'),
+  // Brand-new units (developers and dealers) — most of Hope's business
+  NEW('house_lot', 'sale', 'Brand-new 3BR Single Attached House, Ready for Occupancy', 'Imus, Cavite', 'Alapan I', 5450000, 'total', house(3, 2, 98, 110, 1), ['Ready for occupancy', 'Developer unit', 'Gated community', 'Clubhouse', 'Bank / Pag-IBIG financing'], 'u_ag4', 'published', true),
+  NEW('house_lot', 'sale', 'Brand-new 4BR Corner House & Lot near Nuvali', 'Santa Rosa, Laguna', 'Santo Domingo', 11200000, 'total', house(4, 3, 190, 200, 2), ['Ready for occupancy', 'Developer unit', 'Clubhouse', 'Swimming pool', 'Garden'], 'u_ag6', 'published', true),
+  PRE('house_lot', 'sale', 'Pre-selling 3BR Single Detached (2027 turnover)', 'Dasmariñas, Cavite', 'Paliparan III', 6980000, 'total', house(3, 3, 120, 150, 1), ['Developer unit', 'Gated community', 'Clubhouse', 'Bank / Pag-IBIG financing'], 'u_ag4'),
+  NEW('townhouse', 'sale', 'Brand-new 2-Storey Townhouse, Ready for Occupancy', 'Bacoor, Cavite', 'Molino VI', 4250000, 'total', house(3, 2, 82, 60, 1), ['Ready for occupancy', 'Developer unit', 'Gated community', 'Near mall'], 'u_ag5'),
+  NEW('house_lot', 'sale', 'Brand-new Bungalow with Garden in Silang', 'Silang, Cavite', 'Lalaan I', 6750000, 'total', house(3, 2, 110, 200, 2), ['Ready for occupancy', 'Garden', 'Flood-free', 'Gated community'], 'u_ag5'),
+  NEW('condo', 'sale', 'Brand-new Studio, Ready for Occupancy – Makati', 'Makati', 'Poblacion', 5900000, 'total', unit(0, 1, 26, 0, 22, 'Semi-furnished'), ['Ready for occupancy', 'Developer unit', 'Gym', 'Swimming pool'], 'u_ag1'),
+  NEW('condo', 'sale', 'Brand-new 2BR with Balcony – Ortigas', 'Pasig', 'San Antonio', 10800000, 'total', unit(2, 2, 64, 1, 30), ['Ready for occupancy', 'Balcony', 'Gym', 'Swimming pool', 'Parking slot'], 'u_ag2', 'published', true),
+  NEW('car', 'sale', 'Brand-new 2026 Toyota Vios 1.3 XLE CVT', 'Imus, Cavite', 'Bucandala', 1020000, 'total', car('Toyota', 'Vios 1.3 XLE CVT', 2026, 0, 'Automatic', 'Gasoline', 'Sedan', 'Red Mica'), ['Brand new', 'With warranty', 'Free PMS', 'Low down payment', 'Financing available'], 'u_ag3', 'published', true),
+  NEW('car', 'sale', 'Brand-new 2026 Toyota Fortuner 2.8 LTD 4x4', 'Pasig', 'Ugong', 2390000, 'total', car('Toyota', 'Fortuner 2.8 LTD 4x4', 2026, 0, 'Automatic', 'Diesel', 'SUV', 'Attitude Black'), ['Brand new', 'With warranty', 'Free PMS', 'Financing available'], 'u_ag3', 'published', true),
+  NEW('car', 'sale', 'Brand-new 2026 Mitsubishi Xpander GLS AT', 'Bacoor, Cavite', 'Niog', 1238000, 'total', car('Mitsubishi', 'Xpander GLS AT', 2026, 0, 'Automatic', 'Gasoline', 'MPV', 'Blade Silver'), ['Brand new', 'With warranty', 'Low down payment', 'Financing available'], 'u_ag5'),
+  NEW('car', 'sale', 'Brand-new 2026 Ford Ranger Wildtrak 4x4', 'Quezon City', 'Cubao', 2050000, 'total', car('Ford', 'Ranger Wildtrak 4x4', 2026, 0, 'Automatic', 'Diesel', 'Pickup', 'Luxe Yellow'), ['Brand new', 'With warranty', 'Free PMS'], 'u_ag3', 'pending'),
+  NEW('car', 'sale', 'Brand-new 2026 Honda City RS Hatchback', 'Makati', 'Guadalupe', 1180000, 'total', car('Honda', 'City RS Hatchback', 2026, 0, 'Automatic', 'Gasoline', 'Hatchback', 'Phoenix Orange'), ['Brand new', 'With warranty', 'Low down payment'], 'u_ag1'),
+  NEW('car', 'sale', 'Brand-new 2026 Nissan Navara VL 4x4', 'Santa Rosa, Laguna', 'Balibago', 1895000, 'total', car('Nissan', 'Navara VL 4x4', 2026, 0, 'Automatic', 'Diesel', 'Pickup', 'Pearl White'), ['Brand new', 'With warranty', 'Financing available'], 'u_ag6'),
+  NEW('motorcycle', 'sale', 'Brand-new 2026 Honda Click 160', 'Dasmariñas, Cavite', 'Salitran II', 126900, 'total', car('Honda', 'Click 160', 2026, 0, 'Automatic', 'Gasoline', 'Scooter', 'Pearl Red'), ['Brand new', 'With warranty', 'Low down payment'], 'u_ag6'),
+  NEW('motorcycle', 'sale', 'Brand-new 2026 Yamaha NMAX 155 Tech Max', 'Imus, Cavite', 'Tanzang Luma', 163900, 'total', car('Yamaha', 'NMAX 155 Tech Max', 2026, 0, 'Automatic', 'Gasoline', 'Scooter', 'Matte Gray'), ['Brand new', 'With warranty', 'Low down payment'], 'u_ag4'),
   P('condo', 'sale', 'Studio Unit near Ayala Avenue, Makati (copy)', 'Makati', 'Bel-Air', 6200000, 'total', unit(0, 1, 24, 0, 15), ['Gym'], 'u_ag1', 'deleted'),
 ];
 
 // Pool for the closed deals of the past 12 months.
 const CLOSED_POOL = [
+  ['house_lot', 'sale', 'Brand-new 3BR House & Lot', ['Imus, Cavite', 'Bacoor, Cavite', 'Dasmariñas, Cavite', 'Santa Rosa, Laguna'], [5.2e6, 9.8e6], 't2', 'brand_new'],
+  ['townhouse', 'sale', 'Brand-new 2BR Townhouse', ['Dasmariñas, Cavite', 'Biñan, Laguna', 'Imus, Cavite'], [3.2e6, 5.2e6], 't2', 'brand_new'],
+  ['condo', 'sale', 'Brand-new 1BR Condo', ['Taguig (BGC)', 'Makati', 'Pasig', 'Mandaluyong'], [5.5e6, 12e6], 't1', 'brand_new'],
+  ['car', 'sale', 'Toyota Vios 1.3 XLE', ['Imus, Cavite', 'Quezon City', 'Pasig'], [960000, 1050000], 'any', 'brand_new'],
+  ['car', 'sale', 'Mitsubishi Xpander GLS', ['Bacoor, Cavite', 'Makati'], [1.15e6, 1.3e6], 'any', 'brand_new'],
+  ['car', 'sale', 'Toyota Fortuner 2.8 LTD', ['Pasig', 'Imus, Cavite'], [2.3e6, 2.45e6], 'any', 'brand_new'],
+  ['motorcycle', 'sale', 'Honda Click 160', ['Dasmariñas, Cavite', 'Santa Rosa, Laguna'], [120000, 130000], 't2', 'brand_new'],
   ['house_lot', 'sale', '3BR House & Lot', ['Imus, Cavite', 'Bacoor, Cavite', 'Dasmariñas, Cavite', 'Santa Rosa, Laguna'], [4.2e6, 9.5e6], 't2'],
-  ['townhouse', 'sale', '2BR Townhouse', ['Dasmariñas, Cavite', 'Biñan, Laguna', 'Imus, Cavite'], [2.6e6, 4.8e6], 't2'],
   ['lot', 'sale', 'Residential Lot', ['Silang, Cavite', 'Tagaytay, Cavite', 'Calamba, Laguna'], [1.8e6, 6.5e6], 't2'],
-  ['condo', 'sale', '1BR Condo', ['Taguig (BGC)', 'Makati', 'Pasig', 'Mandaluyong'], [4.8e6, 13e6], 't1'],
   ['condo', 'rent', 'Studio for Rent', ['Makati', 'Taguig (BGC)', 'Pasig'], [18000, 45000], 't1'],
   ['house_lot', 'rent', 'House for Rent', ['Imus, Cavite', 'Quezon City', 'Bacoor, Cavite'], [22000, 65000], 'any'],
   ['car', 'sale', 'Toyota Vios', ['Imus, Cavite', 'Quezon City', 'Pasig'], [420000, 690000], 'any'],
-  ['car', 'sale', 'Mitsubishi Xpander', ['Bacoor, Cavite', 'Makati'], [780000, 990000], 'any'],
-  ['motorcycle', 'sale', 'Yamaha Aerox', ['Dasmariñas, Cavite', 'Santa Rosa, Laguna'], [85000, 125000], 't2'],
   ['house_lot', 'sale', '4BR Family Home', ['Quezon City', 'Parañaque', 'Muntinlupa (Alabang)'], [11e6, 24e6], 't1'],
 ];
 
@@ -111,13 +132,16 @@ const MESSAGES = {
 };
 
 const DESCRIPTIONS = {
+  property_new: '{ntitle}. Straight from the developer and ready for occupancy ({city}). Bank and Pag-IBIG financing available; Hope assists with the reservation, documents and turnover. Model unit viewing by appointment.',
+  property_pre: '{title} in {city}. Pre-selling unit from the developer: low monthly down payment during construction, then bank or Pag-IBIG financing. Reserve early for the best price and unit choice.',
+  vehicle_new: '{ntitle}, 0 km, with full manufacturer warranty and free periodic maintenance. Low down payment with partner banks; Hope handles the reservation, financing papers and release.',
   property: 'Well-kept {title} in {city}. Close to schools, malls and public transport. Documents are complete and the owner has signed an Authority to Sell with Hope. Viewing by appointment with your Hope account specialist.',
   vehicle: '{title}, {mileage} km. Regularly maintained, complete OR/CR, with deed of sale ready. Test drive and inspection by appointment. Financing assistance available through partner banks.',
 };
 
 function describe(l) {
-  const t = DESCRIPTIONS[l.group];
-  return t.replace('{title}', l.title).replace('{city}', l.city).replace('{mileage}', (l.specs.mileage || 0).toLocaleString());
+  const t = DESCRIPTIONS[l.condition === 'brand_new' ? `${l.group}_new` : l.condition === 'pre_selling' && l.group === 'property' ? 'property_pre' : l.group] || DESCRIPTIONS[l.group];
+  return t.replace('{ntitle}', /brand-new/i.test(l.title) ? l.title : `Brand-new ${l.title}`).replace('{title}', l.title).replace('{city}', l.city).replace('{mileage}', (l.specs.mileage || 0).toLocaleString());
 }
 
 export function defaultState() {
@@ -141,8 +165,10 @@ export function defaultState() {
   const managerOf = (id) => TEAMS.find((t) => t.id === teamOf(id))?.managerId;
   const actor = (id) => (id ? { type: 'staff', id, name: staffById[id].name, role: staffById[id].role } : { type: 'system', id: null, name: 'System', role: null });
 
+  // Sample dates never lie in the future (e.g. a payout 12 days after a deal closed this week).
+  const past = (d) => new Date(Math.min(new Date(d).getTime(), now.getTime() - 3600000));
   const log = (at, actorObj, event, description, extra = {}) => audit.push({
-    id: `a${audit.length + 1}`, at: iso(at), actor: actorObj, event, description, severity: extra.severity || 'info',
+    id: `a${audit.length + 1}`, at: iso(past(at)), actor: actorObj, event, description, severity: extra.severity || 'info',
     subject: extra.subject || null, changes: extra.changes || null, ip: extra.ip || r.pick(ips), device: extra.device || r.pick(devs), channel: extra.channel || 'admin',
   });
 
@@ -163,6 +189,7 @@ export function defaultState() {
       specs: t.specs, features: t.features, description: '', photos: [], artSeed: counters.listing * 3 + 1,
       agentId: t.agentId, teamId: teamOf(t.agentId), ownerName: r.pick(['Mr. & Mrs. Santos', 'Dr. R. Lacson', 'L. Fernandez', 'Spouses Garcia', 'A. Villanueva', 'M. Dimaculangan', 'R. Uy']), ownerPhone: `0917 ${r.int(100, 999)} ${r.int(1000, 9999)}`,
       authority: { type: r.chance(0.6) ? 'Exclusive' : 'Non-exclusive', file: 'Authority-to-Sell.pdf', validUntil: iso(addDays(createdAt, 180)) },
+      condition: t.condition || (/pre-selling/i.test(t.title) ? 'pre_selling' : 'pre_owned'),
       status: t.status, featured: !!t.featured, views: 0, shares: { link: 0, facebook: 0, messenger: 0, viber: 0, qr: 0 },
       createdAt: iso(createdAt), createdBy: t.agentId, submittedAt: null, approvedAt: null, approvedBy: null, publishedAt: null, expiresAt: null,
       updatedAt: iso(createdAt), updatedBy: t.agentId, review: null, deleted: null, ...extra,
@@ -247,7 +274,7 @@ export function defaultState() {
 
   const addPayment = (deal, kind, amount, at, method, byId, payer, online = false) => {
     counters.receipt += 1; payN += 1;
-    const p = { id: `p${payN}`, no: `${settings.brand.documents.receiptPrefix}-${pad(counters.receipt, 6)}`, dealId: deal.id, customerId: kind === 'commission' ? null : deal.customerId, payer, kind, amount, method, ref: method === 'Cash' ? '' : `REF${r.int(100000, 999999)}`, at: iso(at), receivedBy: byId, online, void: null };
+    const p = { id: `p${payN}`, no: `${settings.brand.documents.receiptPrefix}-${pad(counters.receipt, 6)}`, dealId: deal.id, customerId: kind === 'commission' ? null : deal.customerId, payer, kind, amount, method, ref: method === 'Cash' ? '' : `REF${r.int(100000, 999999)}`, at: iso(past(at)), receivedBy: byId, online, void: null };
     payments.push(p);
     log(at, online ? { type: 'customer', id: deal.customerId, name: payer, role: null } : actor(byId), 'payment.recorded', `Receipt ${p.no}: ₱${amount.toLocaleString()} ${kind.replace('_', ' ')} for ${deal.code}`, { subject: { type: 'deal', id: deal.id, label: deal.code }, channel: online ? 'mobile' : 'admin' });
     return p;
@@ -268,7 +295,8 @@ export function defaultState() {
     const count = k === 0 ? 2 : 2 + Math.round((months - k) / 4) + (r.chance(0.4) ? 1 : 0);
     for (let j = 0; j < count; j++) {
       const t = r.pick(CLOSED_POOL);
-      const [category, purpose, base, cities, [lo, hi], team] = t;
+      const [category, purpose, base, cities, [lo, hi], team, condition = 'pre_owned'] = t;
+      const isNew = condition === 'brand_new';
       const agentId = r.pick(agentsOfTeam(team));
       const price = purpose === 'rent' ? Math.round((lo + r() * (hi - lo)) / 500) * 500 : Math.round((lo + r() * (hi - lo)) / 10000) * 10000;
       const city = r.pick(cities);
@@ -276,9 +304,9 @@ export function defaultState() {
       const closedAt = new Date(monthStart.getFullYear(), monthStart.getMonth(), r.int(1, maxDay), r.int(9, 17), r.int(0, 59));
       const created = addDays(closedAt, -r.int(25, 70));
       const g = groupOf(category);
-      const specs = g === 'vehicle' ? car(base.split(' ')[0], base.split(' ').slice(1).join(' '), 2017 + r.int(0, 6), r.int(8, 90) * 1000, 'Automatic', 'Gasoline', category === 'motorcycle' ? 'Scooter' : 'Sedan', r.pick(['White', 'Silver', 'Black', 'Red'])) : category === 'lot' ? lotSpec(r.int(120, 600)) : category === 'condo' ? unit(r.int(0, 2), 1, r.int(22, 70), r.int(0, 1), r.int(5, 30)) : house(r.int(2, 4), r.int(1, 3), r.int(60, 220), r.int(45, 300), r.int(0, 2));
-      const title = `${g === 'vehicle' ? `${specs.year} ` : ''}${base} in ${city.split(',')[0]}`;
-      const l = mkListing({ category, purpose, title, city, barangay: r.pick(['Poblacion', 'San Isidro', 'Santo Niño', 'Bagong Silang', 'San Jose']), price, unit: purpose === 'rent' ? 'month' : 'total', specs, features: [], agentId, status: purpose === 'rent' ? 'rented' : 'sold' }, created);
+      const specs = g === 'vehicle' ? car(base.split(' ')[0], base.split(' ').slice(1).join(' '), isNew ? closedAt.getFullYear() : 2017 + r.int(0, 6), isNew ? 0 : r.int(8, 90) * 1000, 'Automatic', 'Gasoline', category === 'motorcycle' ? 'Scooter' : 'Sedan', r.pick(['White', 'Silver', 'Black', 'Red'])) : category === 'lot' ? lotSpec(r.int(120, 600)) : category === 'condo' ? unit(r.int(0, 2), 1, r.int(22, 70), r.int(0, 1), r.int(5, 30)) : house(r.int(2, 4), r.int(1, 3), r.int(60, 220), r.int(45, 300), r.int(0, 2));
+      const title = `${g === 'vehicle' ? `${isNew ? 'Brand-new ' : ''}${specs.year} ` : ''}${base} in ${city.split(',')[0]}`;
+      const l = mkListing({ condition, category, purpose, title, city, barangay: r.pick(['Poblacion', 'San Isidro', 'Santo Niño', 'Bagong Silang', 'San Jose']), price, unit: purpose === 'rent' ? 'month' : 'total', specs, features: [], agentId, status: purpose === 'rent' ? 'rented' : 'sold' }, created);
       publish(l, created, r.int(1, 3));
       l.views = r.int(200, 3000); l.shares = { link: r.int(2, 30), facebook: r.int(5, 80), messenger: r.int(1, 25), viber: r.int(0, 10), qr: r.int(0, 5) };
       const cust = r.pick(customers);
@@ -317,7 +345,7 @@ export function defaultState() {
       for (const [role, sid, gross, wht, net] of parts) {
         counters.voucher += 1;
         const status = !collected ? 'pending' : k >= 2 ? 'paid' : k === 1 ? r.pick(['paid', 'approved']) : 'for_approval';
-        const cm = { id: `cm${counters.voucher}`, no: `${settings.brand.documents.voucherPrefix}-${pad(counters.voucher, 5)}`, dealId: deal.id, staffId: sid, role, gross, wht, net, status, createdAt: iso(closedAt), approvedBy: ['approved', 'paid'].includes(status) ? 'u_fin' : null, approvedAt: ['approved', 'paid'].includes(status) ? iso(addDays(closedAt, 7)) : null, paidBy: status === 'paid' ? 'u_fin' : null, paidAt: status === 'paid' ? iso(addDays(closedAt, 12)) : null };
+        const cm = { id: `cm${counters.voucher}`, no: `${settings.brand.documents.voucherPrefix}-${pad(counters.voucher, 5)}`, dealId: deal.id, staffId: sid, role, gross, wht, net, status, createdAt: iso(closedAt), approvedBy: ['approved', 'paid'].includes(status) ? 'u_fin' : null, approvedAt: ['approved', 'paid'].includes(status) ? iso(past(addDays(closedAt, 7))) : null, paidBy: status === 'paid' ? 'u_fin' : null, paidAt: status === 'paid' ? iso(past(addDays(closedAt, 12))) : null };
         commissions.push(cm);
         if (cm.paidAt) log(new Date(cm.paidAt), actor('u_fin'), 'commission.paid', `Paid commission ${cm.no} to ${staffById[sid].name}: ₱${net.toLocaleString()}`, { subject: dsubj });
       }
@@ -342,7 +370,7 @@ export function defaultState() {
     items.forEach((f) => { f.status = isLast ? 'billed' : 'paid'; f.statementId = st.id; });
     log(issued, actor('u_super'), 'billing.statement_issued', `Issued ${st.no} to Hope: ₱${total.toLocaleString()} (${items.length} deal${items.length === 1 ? '' : 's'})`, { subject: { type: 'statement', id: st.id, label: st.no } });
     if (!isLast) {
-      const paidAt = addDays(issued, r.int(3, 12));
+      const paidAt = past(addDays(issued, r.int(3, 12)));
       st.payments.push({ id: `sp${st.id}`, amount: total, method: 'Bank transfer', ref: `BPI${r.int(100000, 999999)}`, at: iso(paidAt), by: 'u_owner', note: '' });
       counters.ntReceipt += 1;
       st.confirmedAt = iso(addDays(paidAt, 1)); st.confirmedBy = 'u_super'; st.receiptNo = `NT-OR-${pad(counters.ntReceipt, 5)}`;
