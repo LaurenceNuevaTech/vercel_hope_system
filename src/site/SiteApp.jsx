@@ -24,7 +24,12 @@ function Header() {
   const cust = meCustomer(state);
   const [open, setOpen] = useState(false);
   const loc = useLocation();
-  useEffect(() => setOpen(false), [loc.pathname]);
+  useEffect(() => setOpen(false), [loc.pathname, loc.search]);
+  // Buy / Rent / Vehicles all open /listings; only the one matching the current filter is highlighted.
+  const q = new URLSearchParams(loc.search);
+  const onListings = loc.pathname === '/listings';
+  const isVehicles = onListings && q.get('group') === 'vehicle';
+  const tab = (active) => (active ? 'active' : undefined);
   const unread = cust ? state.notifications.filter((n) => n.to.type === 'customer' && n.to.id === cust.id && !n.read).length : 0;
   const ann = state.cms.announcements.find((a) => a.active && a.audience !== 'staff');
   return (
@@ -34,9 +39,9 @@ function Header() {
         <div className="wrap site-h-in">
           <Logo />
           <nav className={`site-nav ${open ? 'open' : ''}`}>
-            <NavLink to="/listings?purpose=sale">Buy</NavLink>
-            <NavLink to="/listings?purpose=rent">Rent</NavLink>
-            <NavLink to="/listings?group=vehicle">Vehicles</NavLink>
+            <Link to="/listings?purpose=sale" className={tab(onListings && !isVehicles && q.get('purpose') === 'sale')}>Buy</Link>
+            <Link to="/listings?purpose=rent" className={tab(onListings && !isVehicles && q.get('purpose') === 'rent')}>Rent</Link>
+            <Link to="/listings?group=vehicle" className={tab(isVehicles)}>Vehicles</Link>
             <NavLink to="/sell">Sell with Hope</NavLink>
             <NavLink to="/agents">Agents</NavLink>
             <NavLink to="/calculator">Loan calculator</NavLink>
