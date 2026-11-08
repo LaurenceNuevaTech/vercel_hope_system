@@ -197,3 +197,13 @@ table.t td.r, table.t th.r { text-align: right; }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+/* Responsive guard: grid / flex children may shrink below their content width, so wide
+   content (charts, photo strips, horizontal scrollers, tables) scrolls or resizes inside
+   its box instead of widening the page on phones. */
+.dash-grid > *, .editor-grid > *, .lead-grid > *, .roles-grid > *, .settings > *, .set-split > *,
+.ldetail > *, .acct > *, .msim > *, .flows > *, .auth-page > *, .s-login > *, .sell-grid > *,
+.grid2 > *, .grid3 > *, .grid4 > *, .stat-row > *, .team-grid > *, .int-grid > *, .approve-grid > *,
+.lgrid > *, .a-main, .card, .stack > * { min-width: 0; }
+.chart { min-width: 0; max-width: 100%; overflow: hidden; }
+.kv dd, .mono { overflow-wrap: anywhere; }

@@ -1,5 +1,5 @@
-// Vehicle sample photos: real photos of each model from Wikimedia Commons, stored in
-// public/photos/vehicles. Licenses require crediting the authors: see /credits and the
+// Sample photos from Wikimedia Commons: each vehicle model (public/photos/vehicles) and
+// Philippine places used for condos, lots and the Tagaytay rest house (public/photos/places). Licenses require crediting the authors: see /credits and the
 // caption under each listing gallery. Generated from the reviewed search results.
 
 export const VEHICLE_POOLS = {
@@ -144,7 +144,62 @@ export const VEHICLE_POOLS = {
   }
 };
 
+export const PLACE_POOLS = {
+  "bgc": [
+    "bgc-new-1.jpg",
+    "bgc-new-2.jpg",
+    "bgc-new-3.jpg"
+  ],
+  "makati": [
+    "makati-new-1.jpg",
+    "makati-new-2.jpg"
+  ],
+  "ortigas": [
+    "ortigas-new-1.jpg",
+    "ortigas-new-2.jpg",
+    "ortigas-new-3.jpg"
+  ],
+  "tagaytay": [
+    "tagaytay-new-1.jpg",
+    "tagaytay-new-2.jpg",
+    "tagaytay-new-3.jpg"
+  ],
+  "farm": [
+    "farm-new-1.jpg",
+    "farm-new-2.jpg",
+    "farm-new-3.jpg",
+    "farm-new-4.jpg",
+    "farm-new-5.jpg",
+    "farm-new-6.jpg"
+  ],
+  "highway": [
+    "highway-new-1.jpg",
+    "highway-new-2.jpg",
+    "highway-new-3.jpg"
+  ]
+};
+
 export const VEHICLE_CREDITS = [
+  {"file":"/photos/places/bgc-new-1.jpg","title":"Bonifacio Global City - skyline shot from BSA Twin Towers Ortigas","artist":"Patrick Roque","license":"CC BY-SA 3.0","page":"https://commons.wikimedia.org/wiki/File:Bonifacio_Global_City_-_skyline_shot_from_BSA_Twin_Towers_Ortigas.jpg"},
+  {"file":"/photos/places/bgc-new-2.jpg","title":"Wv Bonifacio Global City skyline banner","artist":"Patrick Roque","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Wv_Bonifacio_Global_City_skyline_banner.jpg"},
+  {"file":"/photos/places/bgc-new-3.jpg","title":"Bonifacio Global City - skyline (view from Pioneer) (Taguig and Makati)(2018-04-24) cropped","artist":"Patrick Roque","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Bonifacio_Global_City_-_skyline_(view_from_Pioneer)_(Taguig_and_Makati)(2018-04-24)_cropped.jpg"},
+  {"file":"/photos/places/makati-new-1.jpg","title":"Ayala Avenue,Skyline","artist":"Totoyba2","license":"CC BY-SA 3.0","page":"https://commons.wikimedia.org/wiki/File:Ayala_Avenue,Skyline.JPG"},
+  {"file":"/photos/places/makati-new-2.jpg","title":"Makati City Skyline","artist":"Lawrence Ruiz","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Makati_City_Skyline.jpg"},
+  {"file":"/photos/places/ortigas-new-1.jpg","title":"Eastwood City from Ortigas Center, Oct 2025","artist":"Ralff Nestor Nacor","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Eastwood_City_from_Ortigas_Center,_Oct_2025.jpg"},
+  {"file":"/photos/places/ortigas-new-2.jpg","title":"Ph-mm-pasig-kapitolyo; ortigas center skyline (2015) 01","artist":"Patrick Roque","license":"CC BY-SA 3.0","page":"https://commons.wikimedia.org/wiki/File:Ph-mm-pasig-kapitolyo;_ortigas_center_skyline_(2015)_01.JPG"},
+  {"file":"/photos/places/ortigas-new-3.jpg","title":"Ortigas Interchange & Q.C. skyline, Feb 2026","artist":"Ralff Nestor Nacor","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Ortigas_Interchange_%26_Q.C._skyline,_Feb_2026.jpg"},
+  {"file":"/photos/places/tagaytay-new-1.jpg","title":"Taal Volcano from Tagaytay (001) 2024-06-09","artist":"LMP 2001","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Taal_Volcano_from_Tagaytay_(001)_2024-06-09.jpg"},
+  {"file":"/photos/places/tagaytay-new-2.jpg","title":"Taal Lake, volcano island view Maharlika West (Tagaytay, Cavite; 05-07-2023)","artist":"Patrickroque01","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Taal_Lake,_volcano_island_view_Maharlika_West_(Tagaytay,_Cavite;_05-07-2023).jpg"},
+  {"file":"/photos/places/tagaytay-new-3.jpg","title":"Taal Lake & Volcano from Tagaytay, Jul 2025 (2)","artist":"Ralff Nestor Nacor","license":"CC BY-SA 4.0","page":"https://commons.wikimedia.org/wiki/File:Taal_Lake_%26_Volcano_from_Tagaytay,_Jul_2025_(2).jpg"},
+  {"file":"/photos/places/farm-new-1.jpg","title":"1062Sipat Plaridel, Bulacan during enhanced community quarantine 33","artist":"JFVelasquez Floro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:1062Sipat_Plaridel,_Bulacan_during_enhanced_community_quarantine_33.jpg"},
+  {"file":"/photos/places/farm-new-2.jpg","title":"1062Sipat Plaridel, Bulacan during enhanced community quarantine 29","artist":"JFVelasquez Floro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:1062Sipat_Plaridel,_Bulacan_during_enhanced_community_quarantine_29.jpg"},
+  {"file":"/photos/places/farm-new-3.jpg","title":"1062Sipat Plaridel, Bulacan during enhanced community quarantine 34","artist":"JFVelasquez Floro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:1062Sipat_Plaridel,_Bulacan_during_enhanced_community_quarantine_34.jpg"},
+  {"file":"/photos/places/farm-new-4.jpg","title":"0677Views of Talampas irrigation canals fields bridges 37","artist":"JFVelasquez Floro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:0677Views_of_Talampas_irrigation_canals_fields_bridges_37.jpg"},
+  {"file":"/photos/places/farm-new-5.jpg","title":"1062Sipat Plaridel, Bulacan during enhanced community quarantine 26","artist":"JFVelasquez Floro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:1062Sipat_Plaridel,_Bulacan_during_enhanced_community_quarantine_26.jpg"},
+  {"file":"/photos/places/farm-new-6.jpg","title":"0677Views of Talampas irrigation canals fields bridges 09","artist":"JFVelasquez Floro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:0677Views_of_Talampas_irrigation_canals_fields_bridges_09.jpg"},
+  {"file":"/photos/places/highway-new-1.jpg","title":"687Cabuyao Calamba, Laguna River Bridge Highway 21","artist":"Judgefloro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:687Cabuyao_Calamba,_Laguna_River_Bridge_Highway_21.jpg"},
+  {"file":"/photos/places/highway-new-2.jpg","title":"687Cabuyao Calamba, Laguna River Bridge Highway 22","artist":"Judgefloro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:687Cabuyao_Calamba,_Laguna_River_Bridge_Highway_22.jpg"},
+  {"file":"/photos/places/highway-new-3.jpg","title":"1670Los Baños Calamba National Highway 88","artist":"Judgefloro","license":"CC0","page":"https://commons.wikimedia.org/wiki/File:1670Los_Ba%C3%B1os_Calamba_National_Highway_88.jpg"},
   {
     "file": "/photos/vehicles/vios-new-1.jpg",
     "title": "TOYOTA VIOS XP150 China (15)",

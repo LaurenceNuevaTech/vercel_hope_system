@@ -1,7 +1,7 @@
 // Sample photos for the seeded listings: real photos from Unsplash (Unsplash License,
 // free to use), stored in public/photos so the demo does not depend on another site.
 // Real listings use the photos uploaded by the agent (Listings → Photos).
-import { VEHICLE_POOLS } from './vehiclePhotos.js';
+import { PLACE_POOLS, VEHICLE_POOLS } from './vehiclePhotos.js';
 
 const POOLS = {
   house_new: [
@@ -138,6 +138,13 @@ function vehiclePhotos(l, n) {
   return list.map((_, i) => `/photos/vehicles/${list[(i + n) % list.length]}`).slice(0, 4);
 }
 
+// Places (Wikimedia Commons): the business district of a condo, lots, highway frontage, Taal view.
+const place = (k, n) => `/photos/places/${PLACE_POOLS[k][n % PLACE_POOLS[k].length]}`;
+const AREAS = [[/bgc|bonifacio|taguig/i, 'bgc'], [/makati/i, 'makati'], [/ortigas|pasig|mandaluyong/i, 'ortigas']];
+const areaPool = (l) => AREAS.find(([re]) => re.test(`${l.city} ${l.barangay} ${l.title}`))?.[1] || null;
+const OFFICE = ['/photos/1497366216548-37526070297c.jpg', '/photos/1497366811353-6870744d04b2.jpg'];
+const SHOP = '/photos/1441986300917-64674bd600d8.jpg';
+
 const BODY = { SUV: 'suv', MPV: 'suv', Van: 'suv', Pickup: 'pickup', Sedan: 'sedan', Hatchback: 'hatch', Coupe: 'coupe' };
 
 /** Photo list for a listing: uploaded photos, or matching sample photos. */
@@ -146,13 +153,21 @@ export function listingPhotos(l) {
   const n = Math.max(0, Math.round(((l.artSeed || 1) - 1) / 3));
   const isNew = l.condition === 'brand_new' || l.condition === 'pre_selling';
   switch (l.category) {
-    case 'condo': return [pick('condo', n), pick('living', n, 3), pick('bedroom', n), pick('kitchen', n), pick('amenity', n)];
+    case 'condo': { const area = areaPool(l); return [...(area ? [place(area, n)] : []), pick('condo', n), pick('living', n, 3), pick('bedroom', n), pick('kitchen', n), pick('amenity', n)]; }
     case 'townhouse': return [pick('town', n), pick('living', n, 7), pick('kitchen', n, 2), pick('bedroom', n, 3), pick('bath', n)];
-    case 'lot': return [pick('land', n), pick('land', n + 1)];
-    case 'commercial': return [pick('commercial', n), pick('commercial', n + 1), pick('commercial', n + 2)];
+    case 'lot': return [place('farm', n), place('farm', n + 1), place('farm', n + 3)];
+    case 'commercial': {
+      if (/\blot\b/i.test(l.title)) return [place('highway', n), place('highway', n + 1), place('farm', n)];
+      if (/office/i.test(l.title)) return [OFFICE[0], OFFICE[1], ...(areaPool(l) ? [place(areaPool(l), n)] : [])];
+      return [SHOP, OFFICE[n % 2], ...(areaPool(l) ? [place(areaPool(l), n)] : [])];
+    }
     case 'car': { const v = vehiclePhotos(l, n); if (v) return v; const body = BODY[l.specs?.bodyType] || 'sedan'; return [pick(body, n), pick(body, n + 1), pick('carint', n)]; }
     case 'motorcycle': return vehiclePhotos(l, n) || [pick('moto', n), pick('moto', n + 3)];
-    default: return [pick(isNew ? 'house_new' : 'house_old', n, 5), pick('living', n, 3), pick('kitchen', n), pick('bedroom', n, 3), pick('bath', n)];
+    default: {
+      const house = [pick(isNew ? 'house_new' : 'house_old', n, 5), pick('living', n, 3), pick('kitchen', n), pick('bedroom', n, 3), pick('bath', n)];
+      // Tagaytay: show the Taal view the rest house is sold on.
+      return /tagaytay/i.test(`${l.city} ${l.title}`) ? [house[0], place('tagaytay', n), ...house.slice(1, 4)] : house;
+    }
   }
 }
 
