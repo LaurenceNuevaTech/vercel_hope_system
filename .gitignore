@@ -1,0 +1,5 @@
+node_modules/
+dist/
+
+# Proposal documents, diagrams and their generator are confidential: kept local only.
+docs/
