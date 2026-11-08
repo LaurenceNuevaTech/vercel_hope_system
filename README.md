@@ -75,7 +75,7 @@ src/
   lib/       catalog.js (categories, roles, permissions, Settings catalog, integrations, CMS defaults)
              seed.js (sample data), money.js (commission and fee computation), actions.js (business actions + audit),
              auth.js (lockout, authenticator, PIN rules, permissions), apiSpec.js (planned REST API + mobile screens),
-             analytics.js, store.jsx (browser storage), art.js (drawn sample photos), format.js, icons.jsx
+             analytics.js, store.jsx (browser storage), art.js (sample photo sets per category), format.js, icons.jsx
   site/      public website, customer sign-in and portal
   admin/     staff portal
   mobile/    phone simulator
@@ -83,6 +83,8 @@ src/
   printables.jsx   receipts, vouchers, statements
 docs/        documentation (Word / PDF), diagrams, mobile tracker, generator
 ```
+
+Sample listing photos are from [Unsplash](https://unsplash.com) (Unsplash License, free to use) and stored in `public/photos/`; real listings use the photos uploaded by the agents.
 
 The real system (Laravel backend, MySQL, the same API for the website and
 the app) is described in `docs/Hope-System-Documentation.pdf`.
