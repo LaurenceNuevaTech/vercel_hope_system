@@ -84,7 +84,7 @@ src/
 docs/        documentation (Word / PDF), diagrams, mobile tracker, generator
 ```
 
-Sample listing photos are from [Unsplash](https://unsplash.com) (Unsplash License, free to use) and stored in `public/photos/`; real listings use the photos uploaded by the agents.
+Sample listing photos: houses, condos, interiors and lots from [Unsplash](https://unsplash.com) (Unsplash License); vehicles are photos of the actual models (Toyota Vios, Fortuner, Ford Ranger, Honda Click…) from Wikimedia Commons under CC BY / CC BY-SA, credited on `/credits` and under each listing gallery. All are stored in `public/photos/`; real listings use the photos uploaded by the agents.
 
 The real system (Laravel backend, MySQL, the same API for the website and
 the app) is described in `docs/Hope-System-Documentation.pdf`.

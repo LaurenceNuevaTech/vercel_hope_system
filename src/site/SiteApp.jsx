@@ -9,6 +9,7 @@ import { Browse, ListingPage } from './Listings.jsx';
 import { CustomerLogin, CustomerRegister, ForgotPassword } from './Auth.jsx';
 import Account from './Account.jsx';
 import Sell from './Sell.jsx';
+import { VEHICLE_CREDITS } from '../lib/vehiclePhotos.js';
 
 export function DemoBar() {
   return (
@@ -72,7 +73,7 @@ function Footer() {
           <p style={{ opacity: 0.8 }}>{c.legalName}<br />{c.license}</p>
         </div>
         <div><h4>Explore</h4><Link to="/listings?purpose=sale">Properties for sale</Link><Link to="/listings?purpose=rent">For rent</Link><Link to="/listings?group=vehicle">Vehicles</Link><Link to="/agents">Our agents</Link></div>
-        <div><h4>Company</h4><Link to="/p/about">About Hope</Link><Link to="/faq">FAQs</Link><Link to="/p/terms">Terms of use</Link><Link to="/p/privacy">Privacy notice</Link></div>
+        <div><h4>Company</h4><Link to="/p/about">About Hope</Link><Link to="/faq">FAQs</Link><Link to="/p/terms">Terms of use</Link><Link to="/p/privacy">Privacy notice</Link><Link to="/credits">Photo credits</Link></div>
         <div><h4>Contact</h4><span>{c.address}</span><span>{c.phone}</span><span>{c.email}</span><span>{c.hours}</span></div>
       </div>
       <div className="wrap site-f-bottom"><span>© {new Date().getFullYear()} {state.settings.brand.identity.fullName}</span><span>System by <b>Nueva Technology</b></span></div>
@@ -144,6 +145,26 @@ function CmsPage() {
   const p = state.cms.pages.find((x) => x.slug === slug);
   if (!p) return <div className="wrap page"><Empty title="Page not found" /></div>;
   return <div className="wrap page narrow"><h1>{p.title}</h1>{p.body.split('\n').filter(Boolean).map((t, i) => <p key={i}>{t}</p>)}</div>;
+}
+
+function Credits() {
+  return (
+    <div className="wrap page narrow">
+      <h1>Photo credits</h1>
+      <p className="muted">The sample listings use photos by the people below. Real listings use the photos uploaded by Hope's agents.</p>
+      <h3>Vehicles (Wikimedia Commons)</h3>
+      <div className="card">
+        {VEHICLE_CREDITS.map((c) => (
+          <div key={c.file} className="list-row">
+            <img src={c.file} alt="" style={{ width: 72, height: 48, objectFit: 'cover', borderRadius: 6 }} />
+            <span className="grow"><a href={c.page} target="_blank" rel="noreferrer">{c.title}</a><div className="mini">by {c.artist} · {c.license}</div></span>
+          </div>
+        ))}
+      </div>
+      <h3 style={{ marginTop: 20 }}>Houses, condos, interiors and lots</h3>
+      <p>Photos from <a href="https://unsplash.com" target="_blank" rel="noreferrer">Unsplash</a>, used under the Unsplash License.</p>
+    </div>
+  );
 }
 
 function Faq() {
@@ -225,6 +246,7 @@ export default function SiteApp() {
       <Route path="/sell" element={<Sell />} />
       <Route path="/calculator" element={<CalculatorPage />} />
       <Route path="/faq" element={<Faq />} />
+      <Route path="/credits" element={<Credits />} />
       <Route path="/p/:slug" element={<CmsPage />} />
       <Route path="/login" element={<CustomerLogin />} />
       <Route path="/register" element={<CustomerRegister />} />

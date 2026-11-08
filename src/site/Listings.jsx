@@ -4,6 +4,7 @@ import Icon from '../lib/icons.jsx';
 import { audit, categoryLabel, meCustomer, useStore } from '../lib/store.jsx';
 import { createInquiry, requestViewing } from '../lib/actions.js';
 import { listingPhotos } from '../lib/art.js';
+import { photoCredits } from '../lib/vehiclePhotos.js';
 import { addDays, fmtDate, peso, priceLabel } from '../lib/format.js';
 import { CONDITIONS, conditionLabel } from '../lib/catalog.js';
 import { Avatar, Badge, Empty, Gallery, ListingCard, Modal, Pager, ShareModal } from '../components.jsx';
@@ -124,6 +125,7 @@ export function ListingPage() {
       <div className="ldetail">
         <div>
           <Gallery photos={listingPhotos(l)} />
+          {(() => { const cr = photoCredits(listingPhotos(l)); return cr.length > 0 && <p className="mini" style={{ margin: '6px 2px 0' }}>Sample photos: {cr.map((c, i) => <span key={c.file}>{i ? '; ' : ''}<a href={c.page} target="_blank" rel="noreferrer">{c.artist}</a> ({c.license})</span>)} · Wikimedia Commons · <Link to="/credits">all credits</Link></p>; })()}
           <div className="card card-pad" style={{ marginTop: 16 }}>
             <h3>Details</h3>
             <div className="spec-grid">

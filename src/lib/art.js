@@ -1,6 +1,7 @@
 // Sample photos for the seeded listings: real photos from Unsplash (Unsplash License,
 // free to use), stored in public/photos so the demo does not depend on another site.
 // Real listings use the photos uploaded by the agent (Listings → Photos).
+import { VEHICLE_POOLS } from './vehiclePhotos.js';
 
 const POOLS = {
   house_new: [
@@ -121,6 +122,22 @@ const url = (id) => `/photos/${id}.jpg`;
 // Different steps per pool so neighbouring listings do not share the same photos.
 const pick = (pool, n, step = 1) => url(POOLS[pool][(n * step) % POOLS[pool].length]);
 
+// Vehicles: photos of the actual model (Wikimedia Commons, credited on /credits), matched by
+// make + model, and by generation (year) where the look changed. Unknown models fall back to
+// generic photos by body type.
+const MODELS = ['click', 'nmax', 'adv', 'vios', 'fortuner', 'montero', 'xpander', 'ranger', 'navara', 'city', 'civic', 'hiace', 'innova', 'raize', 'accent'];
+const NEW_FROM = { vios: 2023, fortuner: 2021, montero: 2020, xpander: 2022, ranger: 2023, navara: 2021 };
+function vehiclePhotos(l, n) {
+  const text = `${l.specs?.make || ''} ${l.specs?.model || ''}`.toLowerCase();
+  const key = MODELS.find((k) => new RegExp(`\\b${k}\\b`).test(text));
+  const pool = key && VEHICLE_POOLS[key];
+  if (!pool) return null;
+  const gen = key === 'click' ? (/160/.test(text) ? 'new' : 'old') : (Number(l.specs?.year) || 0) >= (NEW_FROM[key] || 0) ? 'new' : 'old';
+  const list = pool[gen]?.length ? pool[gen] : pool.new?.length ? pool.new : pool.old;
+  if (!list?.length) return null;
+  return list.map((_, i) => `/photos/vehicles/${list[(i + n) % list.length]}`).slice(0, 4);
+}
+
 const BODY = { SUV: 'suv', MPV: 'suv', Van: 'suv', Pickup: 'pickup', Sedan: 'sedan', Hatchback: 'hatch', Coupe: 'coupe' };
 
 /** Photo list for a listing: uploaded photos, or matching sample photos. */
@@ -133,8 +150,8 @@ export function listingPhotos(l) {
     case 'townhouse': return [pick('town', n), pick('living', n, 7), pick('kitchen', n, 2), pick('bedroom', n, 3), pick('bath', n)];
     case 'lot': return [pick('land', n), pick('land', n + 1)];
     case 'commercial': return [pick('commercial', n), pick('commercial', n + 1), pick('commercial', n + 2)];
-    case 'car': { const body = BODY[l.specs?.bodyType] || 'sedan'; return [pick(body, n), pick(body, n + 1), pick('carint', n)]; }
-    case 'motorcycle': return [pick('moto', n), pick('moto', n + 3)];
+    case 'car': { const v = vehiclePhotos(l, n); if (v) return v; const body = BODY[l.specs?.bodyType] || 'sedan'; return [pick(body, n), pick(body, n + 1), pick('carint', n)]; }
+    case 'motorcycle': return vehiclePhotos(l, n) || [pick('moto', n), pick('moto', n + 3)];
     default: return [pick(isNew ? 'house_new' : 'house_old', n, 5), pick('living', n, 3), pick('kitchen', n), pick('bedroom', n, 3), pick('bath', n)];
   }
 }
